@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_trend">
+
+    <fragment
+        android:id="@+id/navigation_trend"
+        android:name="comp4342.grp15.gem.ui.trend.TrendFragment"
+        android:label="Trend"
+        tools:layout="@layout/fragment_trend" />
+
+    <fragment
+        android:id="@+id/navigation_map"
+        android:name="comp4342.grp15.gem.ui.map.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map" />
+
+    <fragment
+        android:id="@+id/navigation_upload"
+        android:name="comp4342.grp15.gem.ui.upload.UploadFragment"
+        android:label="Upload"
+        tools:layout="@layout/fragment_upload" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="comp4342.grp15.gem.ui.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+</navigation>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.upload.UploadFragment">
+
+    <Button
+        android:id="@+id/upload_post_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="284dp"
+        android:text="Post"
+        app:layout_constraintEnd_toEndOf="@+id/upload_message_muitedittext"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="@+id/upload_message_muitedittext"
+        app:layout_constraintTop_toBottomOf="@+id/upload_message_muitedittext" />
+
+    <ImageView
+        android:id="@+id/upload_photo_image"
+        android:layout_width="316dp"
+        android:layout_height="192dp"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:contextClickable="true"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="@+id/upload_message_muitedittext"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/upload_message_muitedittext"
+        app:layout_constraintTop_toBottomOf="@+id/upload_message_muitedittext"
+        app:srcCompat="@drawable/ple_choose_pic" />
+
+    <EditText
+        android:id="@+id/upload_message_muitedittext"
+        android:layout_width="317dp"
+        android:layout_height="159dp"
+        android:layout_marginTop="52dp"
+        android:capitalize="none"
+        android:ems="10"
+        android:gravity="start|top"
+        android:hint="Your Message, At least 10 Chars, No more 256 Chars."
+        android:inputType="textMultiLine"
+        android:maxLength="512"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/upload_location_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Your Location:"
+        android:textColor="#DA1414"
+        app:layout_constraintEnd_toEndOf="@+id/upload_photo_image"
+        app:layout_constraintStart_toStartOf="@+id/upload_photo_image"
+        app:layout_constraintTop_toBottomOf="@+id/upload_photo_image" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

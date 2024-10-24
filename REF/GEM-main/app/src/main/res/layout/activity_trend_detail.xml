@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TrendDetailActivity">
+
+    <TextView
+        android:id="@+id/trend_detail_poster"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="PosterName:"
+        android:textColor="#2943D3"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/trend_detail_image"
+        app:layout_constraintStart_toStartOf="@+id/trend_detail_image" />
+
+    <ImageView
+        android:id="@+id/trend_detail_image"
+        android:layout_width="369dp"
+        android:layout_height="246dp"
+        android:layout_marginTop="96dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+    <TextView
+        android:id="@+id/trend_detail_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Message:"
+        app:layout_constraintEnd_toEndOf="@+id/trend_detail_image"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/trend_detail_image"
+        app:layout_constraintTop_toBottomOf="@+id/trend_detail_post_time" />
+
+    <TextView
+        android:id="@+id/trend_detail_location"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:text="Location:"
+        android:textColor="#E40B0B"
+        app:layout_constraintEnd_toEndOf="@+id/trend_detail_image"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/trend_detail_image"
+        app:layout_constraintTop_toBottomOf="@+id/trend_detail_image" />
+
+    <TextView
+        android:id="@+id/trend_detail_post_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Post Time:"
+        android:textColor="#21D829"
+        app:layout_constraintStart_toStartOf="@+id/trend_detail_image"
+        app:layout_constraintTop_toBottomOf="@+id/trend_detail_location" />
+</androidx.constraintlayout.widget.ConstraintLayout>

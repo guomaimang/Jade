@@ -1,0 +1,13 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: "GEM-Server"
+  datasource:
+    url: jdbc:mysql://20.2.70.63:3306/gem-project?useSSL=false&autoReconnect=true
+    username: gem-project
+    password: hWMa52eyeYTCiNC3
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      max-lifetime: 0

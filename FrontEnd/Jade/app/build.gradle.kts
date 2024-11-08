@@ -51,6 +51,22 @@ android {
 
 dependencies {
 
+    //navigator
+    val nav_version = "2.8.3"
+    // Jetpack Compose integration
+    implementation(libs.androidx.navigation.compose)
+    // Views/Fragments integration
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
+    // Feature module support for Fragments
+    implementation(libs.androidx.navigation.dynamic.features.fragment)
+    // Testing Navigation
+    androidTestImplementation(libs.androidx.navigation.testing)
+
+    //coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

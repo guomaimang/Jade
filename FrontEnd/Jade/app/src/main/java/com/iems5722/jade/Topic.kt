@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.iems5722.jade.ui.theme.JadeTheme
+
 class Topic : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +54,7 @@ class Topic : ComponentActivity() {
 }
 
 @Composable
-fun  TopicScreen(){
+fun TopicScreen() {
     var context = LocalContext.current
 
     var bgHeight = ContentScale.FillHeight
@@ -65,7 +66,7 @@ fun  TopicScreen(){
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 12.dp)
-    ){
+    ) {
         // TODO: If bg is needed
 //        AsyncImage(
 //            model = ImageRequest.Builder(LocalContext.current)
@@ -86,19 +87,19 @@ fun  TopicScreen(){
                     headerHeight = coordinates.size.height / 2
                 }
                 .zIndex(1f)
-        ){
-            Row (
+        ) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = stringResource(R.string.app_name))
             }
         }
 
-        Box (
+        Box(
             // Bottom
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,24 +109,24 @@ fun  TopicScreen(){
                     bottomHeight = coordinates.size.height / 2
                 }
                 .zIndex(1f)
-        ){
+        ) {
             // TODO: Bottom
             Column {
-                Row (
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     IconButton(
                         // TODO: jump to ?
                         onClick = { },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.notice),
-                            contentDescription = "Notice"
+                            painter = painterResource(id = R.drawable.topic),
+                            contentDescription = "Topics"
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -135,8 +136,19 @@ fun  TopicScreen(){
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.notice),
-                            contentDescription = "Contracts"
+                            painter = painterResource(id = R.drawable.album),
+                            contentDescription = "Album"
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        // TODO: jump to ?
+                        onClick = { },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.settings),
+                            contentDescription = "Settings"
                         )
                     }
                 }
@@ -150,7 +162,7 @@ fun  TopicScreen(){
                 .padding(horizontal = 16.dp)
                 .align(Alignment.TopCenter)
                 .background(Color.Transparent)
-        ){
+        ) {
             Column {
                 // Leave place for header
                 Spacer(modifier = Modifier.height(headerHeight.dp))
@@ -169,7 +181,8 @@ fun  TopicScreen(){
 //                        .clip(CircleShape)
 //                        .size(48.dp),
 //                )
-                Text(text = "Topic")
+//                Text(text = "Topic")
+                // TODO: LazyColumn List
             }
         }
     }

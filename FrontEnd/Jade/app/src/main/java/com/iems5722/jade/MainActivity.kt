@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     Login()
                 }
+
             }
         }
     }
@@ -59,19 +60,21 @@ fun Login(modifier: Modifier = Modifier) {
             .fillMaxSize(),
         contentAlignment = Alignment.Center
         // TODO: background needed?
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center
-        ){
+        ) {
             // TODO: User image, logic, appearance
-            Text(text = "Image",
+            Text(
+                text = "Image",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Nick name",
+            Text(
+                text = "Nick name",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
             )

@@ -21,7 +21,7 @@ public class ErrorCode {
     public static ErrorCode SSO_NO_PERMISSION = new ErrorCode(40022, " You are now in AD. Please contact support.");
 
     // Business
-    public static ErrorCode REQUEST_ILLEGAL = new ErrorCode(40013, "Request Illegal.");
+    public static ErrorCode REQUEST_ILLEGAL = new ErrorCode(40013, "Request/Message Illegal.");
 
     // Server's blame: 500
     // General

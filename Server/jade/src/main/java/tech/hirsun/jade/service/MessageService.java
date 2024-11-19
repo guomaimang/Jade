@@ -7,5 +7,5 @@ import java.util.List;
 public interface MessageService {
     List getMessagesByTopicId(Integer topicId, Long startTime, Long endTime);
 
-    Integer postMessage(Message message);
+    void postMessage(Message message);
 }

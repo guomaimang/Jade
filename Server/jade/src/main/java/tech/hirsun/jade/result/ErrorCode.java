@@ -7,6 +7,10 @@ import lombok.Setter;
 @Getter
 public class ErrorCode {
 
+    /**
+     * Error code and message 是反馈给前端的信息
+     * 后端日志不会反馈这些信息。后端日志将写入抛出的异常的 message
+     */
     private int code;
     private String message;
 
@@ -15,6 +19,7 @@ public class ErrorCode {
     public static ErrorCode USER_NOT_EXIST = new ErrorCode(40011, "No match found. Please try again.");
     public static ErrorCode USER_NOT_LOGIN = new ErrorCode(40012, "User not Login. Please login first.");
     public static ErrorCode USER_NO_PERMISSION = new ErrorCode(40013, "No Permission. Please try again.");
+
 
     // SSO
     public static ErrorCode SSO_TOKEN_INVALID = new ErrorCode(40021, "Token Invalid. Please try again.");

@@ -16,4 +16,5 @@ public class Message {
     private Integer type;
     private String content;
     private String nickname;
+    private Integer topicId;
 }

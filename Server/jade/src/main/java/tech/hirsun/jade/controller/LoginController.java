@@ -9,6 +9,7 @@ import tech.hirsun.jade.result.Result;
 import tech.hirsun.jade.result.ErrorCode;
 import tech.hirsun.jade.service.UserService;
 import tech.hirsun.jade.utils.JwtUtils;
+import tech.hirsun.jade.controller.exception.custom.*;
 
 
 import java.util.Date;
@@ -41,9 +42,8 @@ public class LoginController {
             return Result.success(map);
         }else {
             // If user does not exist, return error message
-            return Result.error(ErrorCode.USER_NOT_EXIST);
+            throw new BadRequestException("User does not exist.", ErrorCode.USER_NOT_EXIST);
         }
-
     }
 
     // Refresh token API
@@ -56,16 +56,14 @@ public class LoginController {
 
             // if the jwt is null, reject the request
             if(StringUtils.isNullOrEmpty(oldJwt)){
-                log.info("The request header jwt is null, return not logged in information");
-                return Result.error(ErrorCode.USER_NOT_LOGIN);
+                throw new BadRequestException("The request header jwt is null, return not logged in information", ErrorCode.USER_NOT_LOGIN);
             }
 
             // parse the jwt, if the jwt is invalid, return false
             Map<String, Object> oldClaims = JwtUtils.parseJwt(oldJwt);
 
             if(Long.parseLong(oldClaims.get("exp").toString()) * 1000 - new Date().getTime() > 1000 * 60 * 60 * 6 ){
-                log.info("No need to refresh the token");
-                return Result.error(ErrorCode.REFUSE_SERVICE);
+                throw new BadRequestException("No need to refresh the token", ErrorCode.USER_NOT_LOGIN);
             }else{
                 Map<String, Object> newClaims = new HashMap<>();
                 newClaims.put("id", oldClaims.get("id"));
@@ -76,8 +74,7 @@ public class LoginController {
             }
 
         }catch (Exception e){
-            log.info("The request header jwt is invalid, return not logged in information");
-            return Result.error(ErrorCode.USER_NOT_LOGIN);
+            throw new BadRequestException("The request header jwt is invalid, return not logged in information", ErrorCode.USER_NOT_LOGIN);
         }
     }
 

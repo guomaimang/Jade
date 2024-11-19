@@ -1,6 +1,7 @@
 package tech.hirsun.jade.controller.exception.handler;
 
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,26 +27,40 @@ public class HTTPExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
     public Result handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        log.error("HTTP Controller Error - handleResourceNotFoundException is caught: {}", ex.getMessage());
+        log.info("HTTP Controller Error - handleResourceNotFoundException is caught: {}", ex.getMessage());
         return Result.error(ex.getErrorCode(), request.getDescription(false));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public Result handleBadRequestException(BadRequestException ex, WebRequest request) {
-        log.error("HTTP Controller Error - handleBadRequestException is caught: {}", ex.getMessage());
+        log.info("HTTP Controller Error - handleBadRequestException is caught: {}", ex.getMessage());
         return Result.error(ex.getErrorCode(), request.getDescription(false));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Result handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public Result methodArgumentNotValidExceptionExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
+        log.info("HTTP Controller Error - methodArgumentNotValidExceptionExceptions is caught: {}", ex.getMessage());
+        return Result.error(ErrorCode.REQUEST_ILLEGAL, errors.toString());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Result constraintViolationExceptionExceptions(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        log.info("HTTP Controller Error - constraintViolationExceptionExceptions is caught: {}", ex.getMessage());
         return Result.error(ErrorCode.REQUEST_ILLEGAL, errors.toString());
     }
 

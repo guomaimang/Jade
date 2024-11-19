@@ -21,7 +21,7 @@ public class MessageController {
      * @param startTime: the start time of the messages range
      * @param endTime: the end time of the messages range
      */
-    @GetMapping("/get_by_topic_id")
+    @GetMapping("/get_messages_by_topic_id")
     private Result getMessagesByTopicId(@RequestParam Integer topicId,
                                            @RequestParam Long startTime,
                                            @RequestParam Long endTime) {
@@ -36,7 +36,8 @@ public class MessageController {
     @PostMapping("/post")
     private Result postMessage(@RequestBody Message message) {
         log.info("Request post message: {}", message);
-        return Result.success(messageService.postMessage(message));
+        messageService.postMessage(message);
+        return Result.success();
     }
 
 }

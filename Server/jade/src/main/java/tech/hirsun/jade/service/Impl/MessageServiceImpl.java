@@ -16,7 +16,9 @@ public class MessageServiceImpl implements MessageService {
     private RedisMessageService redisMessageService;
 
     @Override
-    public List getMessagesByTopicId(Integer topicId, Long startTime, Long endTime) {
+    public List getMessagesByTopicId(Integer topicId,
+                                     Long startTime,
+                                     Long endTime) {
         return redisMessageService.getMessages(topicId.toString(), startTime, endTime);
     }
 

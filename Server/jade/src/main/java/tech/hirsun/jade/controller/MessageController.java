@@ -7,6 +7,8 @@ import tech.hirsun.jade.pojo.Message;
 import tech.hirsun.jade.result.Result;
 import tech.hirsun.jade.service.MessageService;
 
+import java.util.Date;
+
 @Slf4j
 @RestController
 @RequestMapping("/message")
@@ -19,13 +21,18 @@ public class MessageController {
      * Get messages by topic id
      * @param topicId: topic id
      * @param startTime: the start time of the messages range
-     * @param endTime: the end time of the messages range
      */
     @GetMapping("/get_messages_by_topic_id")
     private Result getMessagesByTopicId(@RequestParam Integer topicId,
-                                           @RequestParam Long startTime,
-                                           @RequestParam Long endTime) {
-        log.info("Request messages by chatroom id: {}, start time: {}, end time: {}", topicId, startTime, endTime);
+                                           @RequestParam(required = false) Long startTime) {
+        log.info("Request messages by chatroom id: {}, start time: {}", topicId, startTime);
+        long endTime = new Date().getTime();
+
+        if (startTime == null || startTime < endTime - 5 * 24 * 60 * 60 * 1000 || startTime > endTime) {
+            // 5 days ago
+            startTime = endTime - 5 * 24 * 60 * 60 * 1000;
+        }
+
         return Result.success(messageService.getMessagesByTopicId(topicId, startTime, endTime));
     }
 

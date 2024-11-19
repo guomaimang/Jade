@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tech.hirsun.jade.pojo.User;
 import tech.hirsun.jade.result.Result;
-import tech.hirsun.jade.result.ErrorMessage;
+import tech.hirsun.jade.result.ErrorCode;
 import tech.hirsun.jade.service.UserService;
 import tech.hirsun.jade.utils.JwtUtils;
 
@@ -41,7 +41,7 @@ public class LoginController {
             return Result.success(map);
         }else {
             // If user does not exist, return error message
-            return Result.error(ErrorMessage.USER_NOT_EXIST);
+            return Result.error(ErrorCode.USER_NOT_EXIST);
         }
 
     }
@@ -57,7 +57,7 @@ public class LoginController {
             // if the jwt is null, reject the request
             if(StringUtils.isNullOrEmpty(oldJwt)){
                 log.info("The request header jwt is null, return not logged in information");
-                return Result.error(ErrorMessage.USER_NOT_LOGIN);
+                return Result.error(ErrorCode.USER_NOT_LOGIN);
             }
 
             // parse the jwt, if the jwt is invalid, return false
@@ -65,7 +65,7 @@ public class LoginController {
 
             if(Long.parseLong(oldClaims.get("exp").toString()) * 1000 - new Date().getTime() > 1000 * 60 * 60 * 6 ){
                 log.info("No need to refresh the token");
-                return Result.error(ErrorMessage.REFUSE_SERVICE);
+                return Result.error(ErrorCode.REFUSE_SERVICE);
             }else{
                 Map<String, Object> newClaims = new HashMap<>();
                 newClaims.put("id", oldClaims.get("id"));
@@ -77,7 +77,7 @@ public class LoginController {
 
         }catch (Exception e){
             log.info("The request header jwt is invalid, return not logged in information");
-            return Result.error(ErrorMessage.USER_NOT_LOGIN);
+            return Result.error(ErrorCode.USER_NOT_LOGIN);
         }
     }
 

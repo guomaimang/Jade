@@ -3,7 +3,6 @@ import tech.hirsun.jade.pojo.User;
 
 import org.springframework.stereotype.Service;
 
-@Service
 public interface UserService {
 
     User login(User user);

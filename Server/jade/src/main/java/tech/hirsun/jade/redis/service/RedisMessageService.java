@@ -4,11 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import tech.hirsun.jade.pojo.Message;
 import tech.hirsun.jade.redis.MessagePrefix;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static tech.hirsun.jade.utils.StringAndBeanConventer.beanToString;
+import static tech.hirsun.jade.utils.StringAndBeanConventer.stringToBean;
 
 @Service
 
@@ -18,7 +22,7 @@ public class RedisMessageService {
     JedisPool jedisPool;
 
     // Store messages in a Sorted Set
-    public <T> void saveMessage(String chatId, long timestamp, T message) {
+    public void saveMessage(String chatId, long timestamp, Message message) {
         try (Jedis jedis = jedisPool.getResource()) {
             String key = MessagePrefix.message.getPrefix() + chatId;
             String value = beanToString(message);
@@ -28,11 +32,16 @@ public class RedisMessageService {
     }
 
     // Query messages based on time range
-    public Set<String> getMessages(String chatId, long startTime, long endTime) {
+    public List getMessages(String chatId, long startTime, long endTime) {
         try (Jedis jedis = jedisPool.getResource()) {
             String key = MessagePrefix.message.getPrefix() + chatId;
-            return jedis.zrangeByScore(key, startTime, endTime);
+            Set<String> messagesSet = jedis.zrangeByScore(key, startTime, endTime);
+            List<Message> messages = new ArrayList<>();
+            for (String message : messagesSet) {
+                messages.add(stringToBean(message, Message.class));
+            }
+            return messages;
         }
     }
-    
+
 }

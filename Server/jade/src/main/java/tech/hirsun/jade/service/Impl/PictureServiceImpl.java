@@ -1,8 +1,10 @@
 package tech.hirsun.jade.service.Impl;
 
+import org.springframework.stereotype.Service;
 import tech.hirsun.jade.pojo.Picture;
 import tech.hirsun.jade.service.PictureService;
 
+@Service
 public class PictureServiceImpl implements PictureService {
     @Override
     public Picture getPicturesByTopicId(Integer topicId, Integer pageNum, Integer pageSize) {

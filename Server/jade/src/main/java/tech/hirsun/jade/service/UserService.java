@@ -1,5 +1,4 @@
 package tech.hirsun.jade.service;
-import tech.hirsun.jade.pojo.PageBean;
 import tech.hirsun.jade.pojo.User;
 
 import org.springframework.stereotype.Service;

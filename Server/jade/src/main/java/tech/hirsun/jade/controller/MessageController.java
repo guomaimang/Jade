@@ -39,5 +39,4 @@ public class MessageController {
         return Result.success(messageService.postMessage(message));
     }
 
-
 }

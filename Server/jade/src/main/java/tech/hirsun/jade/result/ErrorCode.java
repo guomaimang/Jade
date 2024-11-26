@@ -23,6 +23,11 @@ public class ErrorCode {
     // General
     public static ErrorCode RESOURCE_NOT_FOUND = new ErrorCode(40014, "Resource Not Found.");
 
+    // Upload
+    public static ErrorCode UPLOAD_FILE_ERROR = new ErrorCode(40015, "File is not uploaded successfully. Please try again.");
+    public static ErrorCode UPLOAD_FILE_TYPE_ERROR = new ErrorCode(40016, "File type is not supported. Please try again.");
+    public static ErrorCode UPLOAD_FILE_SIZE_ERROR = new ErrorCode(40017, "File size is too large. Please try again.");
+
     // SSO
     public static ErrorCode SSO_TOKEN_INVALID = new ErrorCode(40021, "Token Invalid. Please try again.");
     public static ErrorCode SSO_NO_PERMISSION = new ErrorCode(40022, " You are now in AD. Please contact support.");

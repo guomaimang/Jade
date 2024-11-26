@@ -16,11 +16,11 @@ public class Picture {
     private Integer viewCount;
 
     private String uri;
-    private String thumbnail_url;
+    private String thumbnailUrl;
 
     private String location;
-    private String coordinate_x;
-    private String coordinate_y;
+    private String coordinateX;
+    private String coordinateY;
 
     private String title;
     private Date createTime;

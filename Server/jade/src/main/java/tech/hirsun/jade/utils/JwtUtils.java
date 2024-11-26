@@ -2,6 +2,7 @@ package tech.hirsun.jade.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -9,8 +10,10 @@ import java.util.Map;
 
 public class JwtUtils {
     // the key used to sign the JWT, must >= 256 bits
-    private static final String signKey = "NuwhbujHwsvJpwq2peJGkw23ejTmhqoqh2tydkei9izheoo9";
-    private static final Long expirePeriod = 86400000L; // 24 hours
+    @Setter
+    private static String signKey = "NuwhbujHwsvJpwq2peJGkw23ejTmhqoqh2tydkei9izheoo9";
+    @Setter
+    private static Long expirePeriod = 86400000L; // 24 hours
 
     /**
      * Generate a JWT token

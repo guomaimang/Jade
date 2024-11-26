@@ -72,12 +72,12 @@ public class HTTPExceptionHandler {
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
 
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    @ExceptionHandler(Exception.class)
-//    public Result handleGlobalException(Exception ex, WebRequest request) {
-//        log.error("HTTP Controller Error - handleGlobalException is caught: {}", ex.getMessage());
-//        return Result.error(ErrorCode.OTHER_ERROR, request.getDescription(false));
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity handleGlobalException(Exception ex, WebRequest request) {
+        log.error("HTTP Controller Error - handleGlobalException is caught: {}", ex.getMessage());
+        Result result = Result.error(ErrorCode.OTHER_ERROR, request.getDescription(false));
+        return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     // 其他异常处理方法
 }

@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Login(modifier: Modifier = Modifier) {
     // TODO: User image, logic, appearance
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
     val nickname = "nickname"
 
     var context = LocalContext.current

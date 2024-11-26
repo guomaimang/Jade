@@ -2,6 +2,7 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -107,7 +109,9 @@ fun TopicScreen() {
 
     var context = LocalContext.current
     val imageUploadHelper = ImageUploadHelper()
-    val photoPickerLauncher = imageUploadHelper.createPhotoPickerLauncher(context) { bitmap ->
+    val selectedImages = remember { mutableStateListOf<Uri>() }
+    val photoPickerLauncher = imageUploadHelper.createPhotoPickerLauncher(context) { bitmap, uri ->
+        selectedImages.add(uri)
         imageUploadHelper.uploadImage(
             bitmap = bitmap,
             url = "http://YOUR_HOST_ADDRESS:YOUR_PORT_NUM/file/",
@@ -117,6 +121,12 @@ fun TopicScreen() {
                     "上传成功: $response",
                     Toast.LENGTH_LONG
                 ).show()
+
+                // 上传成功后跳转到 PostEditActivity，传递图片 URI 列表
+                val intent = Intent(context, PostEdit::class.java).apply {
+                    putParcelableArrayListExtra("selected_images", ArrayList(selectedImages))
+                }
+                context.startActivity(intent)
             },
             onError = { error ->
                 Toast.makeText(
@@ -127,7 +137,7 @@ fun TopicScreen() {
             }
         )
     }
-
+   
     var postList by remember { mutableStateOf(listOf<Post>()) }
     postList = listOf(
         Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),

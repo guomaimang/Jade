@@ -31,13 +31,13 @@ class ImageUploadHelper {
     @Composable
     fun createPhotoPickerLauncher(
         context: Context,
-        onImageSelected: (Bitmap) -> Unit
+        onImageSelected: (Bitmap, Uri) -> Unit
     ) = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { uris ->
             uris.forEach { uri ->
                 val bitmap = uriToBitmap(context, uri)
-                onImageSelected(bitmap)
+                onImageSelected(bitmap, uri)
             }
         }
     )

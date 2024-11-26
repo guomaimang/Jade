@@ -51,6 +51,14 @@ android {
 
 dependencies {
 
+    val paging_version = "3.3.4"
+
+    implementation(libs.androidx.paging.runtime)
+
+    // alternatively - without Android dependencies for tests
+    testImplementation(libs.androidx.paging.common)
+    implementation(libs.androidx.paging.compose)
+
     //navigator
     val nav_version = "2.8.3"
     // Jetpack Compose integration

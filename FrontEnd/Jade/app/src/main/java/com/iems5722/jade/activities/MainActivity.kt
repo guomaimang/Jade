@@ -1,4 +1,4 @@
-package com.iems5722.jade
+package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.iems5722.jade.R
 
 import com.iems5722.jade.ui.theme.JadeTheme
 
@@ -59,7 +60,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Login(modifier: Modifier = Modifier) {
     // TODO: User image, logic, appearance
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
     val nickname = "nickname"
 
     var context = LocalContext.current
@@ -78,17 +79,17 @@ fun Login(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center
         ) {
             AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(avatar)
-                        .crossfade(true)
-                        .build(),
-                    placeholder = painterResource(R.drawable.placeholder),
-                    contentDescription = "user_img",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(128.dp)
-                        .align(Alignment.CenterHorizontally)
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(avatar)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.placeholder),
+                contentDescription = "user_img",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(128.dp)
+                    .align(Alignment.CenterHorizontally)
             )
 
             Spacer(modifier = Modifier.height(8.dp))

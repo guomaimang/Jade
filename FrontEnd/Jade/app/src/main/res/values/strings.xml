@@ -2,4 +2,5 @@
     <string name="app_name">Jade</string>
     <string name="SettingString">Setting</string>
     <string name="AlbumString">Album on Map</string>
+    <string name="CommitArea">Sharing space</string>
 </resources>

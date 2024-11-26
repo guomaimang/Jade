@@ -1,11 +1,16 @@
-package com.iems5722.jade
+package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,9 +55,12 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageUploadHelper
 
 class Topic : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +89,7 @@ enum class Type {
     ChineseNewYear, MidAutumnFestival, ChingMingFestival, DragonBoatFestival, LanternFestival
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun TopicScreen() {
     val topics = remember { Type.entries.toTypedArray() }
@@ -95,6 +104,29 @@ fun TopicScreen() {
     val testUserAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
     val testUserNickname = "Test"
     val testTime = "Today 13:14"
+
+    var context = LocalContext.current
+    val imageUploadHelper = ImageUploadHelper()
+    val photoPickerLauncher = imageUploadHelper.createPhotoPickerLauncher(context) { bitmap ->
+        imageUploadHelper.uploadImage(
+            bitmap = bitmap,
+            url = "http://YOUR_HOST_ADDRESS:YOUR_PORT_NUM/file/",
+            onResponse = { response ->
+                Toast.makeText(
+                    context,
+                    "上传成功: $response",
+                    Toast.LENGTH_LONG
+                ).show()
+            },
+            onError = { error ->
+                Toast.makeText(
+                    context,
+                    "上传失败: ${error.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        )
+    }
 
     var postList by remember { mutableStateOf(listOf<Post>()) }
     postList = listOf(
@@ -114,12 +146,9 @@ fun TopicScreen() {
         Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
     )
 
-    val context = LocalContext.current
-
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
-
     Box(
         // Background layer
         modifier = Modifier
@@ -205,9 +234,12 @@ fun TopicScreen() {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
-                        // TODO: Upload logic
                         onClick = {
-
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                )
+                            )
                         },
                         modifier = Modifier.weight(1f)
                     ) {
@@ -244,14 +276,14 @@ fun TopicScreen() {
         ) {
             Column {
                 // Leave place for header
-                Spacer(modifier = Modifier.height((headerHeight-16).dp))
+                Spacer(modifier = Modifier.height((headerHeight - 16).dp))
 
                 // Tag Selection
                 LazyRow {
                     items(topics) { topic ->
-                        Column (
+                        Column(
                             modifier = Modifier.clickable(
-                                onClick={
+                                onClick = {
                                     selected = topic.name
 
                                     // TODO: Selected tag changed, re-get the postList
@@ -264,7 +296,7 @@ fun TopicScreen() {
                                     text = topic.name,
                                     style = TextStyle(color = Color.Black)
                                 )
-                            }else{
+                            } else {
                                 Text(
                                     text = topic.name,
                                     style = TextStyle(color = Color.Gray)
@@ -278,20 +310,20 @@ fun TopicScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
                 // TODO: LazyColumn
 
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
-                    ){
-                        postList.forEachIndexed { index, postItem ->
-                            item {
-                                PostItemShow(postItem)
-                            }
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
+                ) {
+                    postList.forEachIndexed { index, postItem ->
+                        item {
+                            PostItemShow(postItem)
                         }
                     }
+                }
 
 
                 // Usage of Image(From Web)

@@ -1,4 +1,4 @@
-package com.iems5722.jade
+package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -39,12 +39,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 
 class Setting : ComponentActivity() {
@@ -63,6 +65,7 @@ class Setting : ComponentActivity() {
 }
 
 @Composable
+@Preview
 fun SettingScreen(modifier: Modifier = Modifier) {
     // TODO: Get User's information
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
@@ -248,7 +251,7 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                                 )
                         ) {
                             Text(
-                                text="Log out",
+                                text = "Log out",
                                 style = TextStyle(color = Color.Cyan, fontSize = 24.sp)
                             )
                         }

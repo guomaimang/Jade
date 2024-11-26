@@ -20,6 +20,8 @@ public class ErrorCode {
     public static ErrorCode USER_NOT_LOGIN = new ErrorCode(40012, "User not Login. Please login first.");
     public static ErrorCode USER_NO_PERMISSION = new ErrorCode(40013, "No Permission. Please try again.");
 
+    // General
+    public static ErrorCode RESOURCE_NOT_FOUND = new ErrorCode(40014, "Resource Not Found.");
 
     // SSO
     public static ErrorCode SSO_TOKEN_INVALID = new ErrorCode(40021, "Token Invalid. Please try again.");

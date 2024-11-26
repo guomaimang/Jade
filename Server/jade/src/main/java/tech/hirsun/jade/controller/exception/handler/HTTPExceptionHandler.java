@@ -5,12 +5,14 @@ import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import tech.hirsun.jade.controller.exception.custom.ResourceNotFoundException;
 import tech.hirsun.jade.result.ErrorCode;
@@ -29,6 +31,14 @@ public class HTTPExceptionHandler {
     public Result handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         log.info("HTTP Controller Error - handleResourceNotFoundException is caught: {}", ex.getMessage());
         return Result.error(ex.getErrorCode(), request.getDescription(false));
+    }
+
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
+        log.info("HTTP Controller Error - handleNoHandlerFoundException is caught: {}", ex.getMessage());
+        Result result = Result.error(ErrorCode.RESOURCE_NOT_FOUND, request.getDescription(false));
+        return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

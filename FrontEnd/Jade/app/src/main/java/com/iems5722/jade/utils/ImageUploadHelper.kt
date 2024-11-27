@@ -16,6 +16,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 
 /**
  * 图片上传工具类
@@ -57,61 +62,62 @@ class ImageUploadHelper {
             }
 
             if (selectedImages.isNotEmpty()) {
-                uploadImagesWithNavigation(context, selectedImages, onSuccess, onError)
+                uploadImagesWithNavigationMock(context, selectedImages, onSuccess, onError)
+//                uploadImagesWithNavigation(context, selectedImages, onSuccess, onError)
             }
         }
     )
 
-//    fun uploadImagesWithNavigation(
-//        context: Context,
-//        images: List<Pair<Bitmap, Uri>>,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//        val uploadedUris = mutableListOf<Uri>()
-//        CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                images.forEach { (bitmap, uri) ->
-//                    val stream = ByteArrayOutputStream()
-//                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-//                    val imageBytes = stream.toByteArray()
-//                    val encodedImage =
-//                        android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
-//
-//                    val client = OkHttpClient()
-//                    val requestBody = "{\"data\":\"$encodedImage\"}"
-//                        .toRequestBody("application/json".toMediaTypeOrNull())
-//                    val request = Request.Builder()
-//                        .url(IMAGE_UPLOAD_URL)
-//                        .post(requestBody)
-//                        .build()
-//
-//                    val response = client.newCall(request).execute()
-//                    if (response.isSuccessful) {
-//                        uploadedUris.add(uri)
-//                    } else {
-//                        throw Exception("HTTP 错误代码: ${response.code}")
-//                    }
-//                }
-//
-//                withContext(Dispatchers.Main) {
-//                    // 跳转到目标页面
-//                    val intent = Intent(context, PostEdit::class.java).apply {
-//                        putParcelableArrayListExtra("selected_images", ArrayList(uploadedUris))
-//                    }
-//                    context.startActivity(intent)
-//                    onSuccess()
-//                }
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//                withContext(Dispatchers.Main) {
-//                    onError(e.message ?: "未知错误")
-//                }
-//            }
-//        }
-//    }
-
     private fun uploadImagesWithNavigation(
+        context: Context,
+        images: List<Pair<Bitmap, Uri>>,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val uploadedUris = mutableListOf<Uri>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                images.forEach { (bitmap, uri) ->
+                    val stream = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+                    val imageBytes = stream.toByteArray()
+                    val encodedImage =
+                        android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
+
+                    val client = OkHttpClient()
+                    val requestBody = "{\"data\":\"$encodedImage\"}"
+                        .toRequestBody("application/json".toMediaTypeOrNull())
+                    val request = Request.Builder()
+                        .url(IMAGE_UPLOAD_URL)
+                        .post(requestBody)
+                        .build()
+
+                    val response = client.newCall(request).execute()
+                    if (response.isSuccessful) {
+                        uploadedUris.add(uri)
+                    } else {
+                        throw Exception("HTTP 错误代码: ${response.code}")
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    // 跳转到目标页面
+                    val intent = Intent(context, PostEdit::class.java).apply {
+                        putParcelableArrayListExtra("selected_images", ArrayList(uploadedUris))
+                    }
+                    context.startActivity(intent)
+                    onSuccess()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    onError(e.message ?: "未知错误")
+                }
+            }
+        }
+    }
+
+    private fun uploadImagesWithNavigationMock(
         context: Context,
         images: List<Pair<Bitmap, Uri>>,
         onSuccess: () -> Unit,

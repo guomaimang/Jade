@@ -51,6 +51,7 @@ android {
 
 dependencies {
 
+    implementation(libs.firebase.crashlytics.buildtools)
     val paging_version = "3.3.4"
 
     implementation(libs.androidx.paging.runtime)

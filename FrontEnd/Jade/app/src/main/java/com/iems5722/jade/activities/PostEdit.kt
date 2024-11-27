@@ -1,6 +1,7 @@
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -53,7 +55,6 @@ import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 
 @Suppress("DEPRECATION")
-//TODO: 闪退问题
 class PostEdit : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +67,7 @@ class PostEdit : ComponentActivity() {
         if (selectedImages.isNullOrEmpty()) {
             // 如果为空，显示错误日志并结束 Activity
             Log.e("PostEditActivity", "No images provided for editing.")
-//            finish() // 结束当前 Activity，避免崩溃
+            finish() // 结束当前 Activity，避免崩溃
             return
         }
 
@@ -83,6 +84,7 @@ class PostEdit : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostEditScreen(selectedImages: List<Uri>) {
+    var context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     val tags = remember { mutableStateListOf<String>() }
@@ -96,7 +98,10 @@ fun PostEditScreen(selectedImages: List<Uri>) {
         TopAppBar(
             title = { Text("Edit Post") },
             navigationIcon = {
-                IconButton(onClick = { /* Back operation */ }) {
+                IconButton(onClick = {
+                    val activity = context as? Activity
+                    activity?.finish()
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = "Back"

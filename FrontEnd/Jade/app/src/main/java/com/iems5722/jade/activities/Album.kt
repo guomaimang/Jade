@@ -2,7 +2,6 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -31,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,49 +70,17 @@ class Album : ComponentActivity() {
 fun AlbumScreen() {
     // TODO:
     var context = LocalContext.current
-    val selectedImages = remember { mutableStateListOf<Uri>() }
     val imageUploadHelper = ImageUploadHelper()
-//    val photoPickerLauncher = imageUploadHelper.createPhotoPickerLauncher(context) { bitmap, uri ->
-//        selectedImages.add(uri)
-//        imageUploadHelper.uploadImage(
-//            bitmap = bitmap,
-//            url = "http://YOUR_HOST_ADDRESS:YOUR_PORT_NUM/file/",
-//            onResponse = { response ->
-//                Toast.makeText(
-//                    context,
-//                    "上传成功: $response",
-//                    Toast.LENGTH_LONG
-//                ).show()
-//
-//                // 上传成功后跳转到 PostEditActivity，传递图片 URI 列表
-//                val intent = Intent(context, PostEdit::class.java).apply {
-//                    putParcelableArrayListExtra("selected_images", ArrayList(selectedImages))
-//                }
-//                context.startActivity(intent)
-//            },
-//            onError = { error ->
-//                Toast.makeText(
-//                    context,
-//                    "上传失败: ${error.message}",
-//                    Toast.LENGTH_LONG
-//                ).show()
-//            }
-//        )
-//    }
-    val photoPickerLauncher = imageUploadHelper.createPhotoPickerLauncher(context) { bitmap, uri ->
-        // 模拟上传成功后的操作
-        Toast.makeText(
-            context,
-            "上传成功: 模拟成功响应",
-            Toast.LENGTH_LONG
-        ).show()
 
-        // 上传成功后跳转到 PostEditActivity，传递图片 URI 列表
-        val intent = Intent(context, PostEdit::class.java).apply {
-            putParcelableArrayListExtra("selected_images", ArrayList(listOf(uri)))
+    val photoPickerLauncher = imageUploadHelper.setupMediaPickerWithUpload(
+        context = context,
+        onSuccess = {
+            Toast.makeText(context, "上传成功并跳转完成", Toast.LENGTH_SHORT).show()
+        },
+        onError = { error ->
+            Toast.makeText(context, "发生错误: $error", Toast.LENGTH_SHORT).show()
         }
-        context.startActivity(intent)
-    }
+    )
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -196,7 +162,9 @@ fun AlbumScreen() {
                     IconButton(
                         onClick = {
                             photoPickerLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                )
                             )
                         },
                         modifier = Modifier.weight(1f)

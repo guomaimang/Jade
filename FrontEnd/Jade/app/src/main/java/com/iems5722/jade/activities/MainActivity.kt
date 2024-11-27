@@ -14,20 +14,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -38,7 +40,6 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
-
 import com.iems5722.jade.ui.theme.JadeTheme
 
 class MainActivity : ComponentActivity() {
@@ -57,6 +58,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(modifier: Modifier = Modifier) {
     // TODO: User image, logic, appearance
@@ -106,6 +108,12 @@ fun Login(modifier: Modifier = Modifier) {
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                shape = MaterialTheme.shapes.extraLarge,
                 label = { Text("Enter your uid") }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -114,8 +122,14 @@ fun Login(modifier: Modifier = Modifier) {
                 onValueChange = { newText ->
                     text2 = newText
                 },
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
+                shape = MaterialTheme.shapes.extraLarge,
                 label = { Text("Enter your password") }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -124,6 +138,8 @@ fun Login(modifier: Modifier = Modifier) {
                     // TODO: Update to Server
 
                     // TODO: What to deliver?
+                    // TODO: webview
+//                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.baidu.com"))
                     val intent = Intent(context, Topic::class.java)
                     context.startActivity(intent)
                 },

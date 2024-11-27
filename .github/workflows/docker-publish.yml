@@ -2,61 +2,43 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
-    tags: 
-      - 'v*.*.*'  # 监听所有版本标签推送
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: 'true'
-    
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    
-    - name: Login to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Extract version information
-      id: extract_version
-      run: |
-        if [[ $GITHUB_REF == refs/tags/* ]]; then
-          VERSION=${GITHUB_REF#refs/tags/}
-          IS_VERSION=true
-        else
-          VERSION=$(date +%Y%m%d%H%M%S)
-          IS_VERSION=false
-        fi
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "IS_VERSION=$IS_VERSION" >> $GITHUB_ENV
-    
-    - name: Build and push
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        push: true
-        platforms: linux/amd64,linux/arm64
-        tags: |
-          hanjiaming/jade:${{ env.VERSION }}
-          ${{ env.IS_VERSION == 'true' && 'hanjiaming/jade:latest' }}
-
-    - name: Docker Hub Description
-      if: ${{ env.IS_VERSION == 'true' }}
-      uses: peter-evans/dockerhub-description@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: hanjiaming/jade
-        readme-filepath: ./docker-readme.md
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "::set-output name=VERSION::${GITHUB_REF#refs/tags/}"
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            hanjiaming/jade:latest
+            hanjiaming/jade:${{ steps.extract_version.outputs.VERSION }}
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: hanjiaming/jade
+          readme-filepath: ./docker-readme.md

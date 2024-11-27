@@ -17,6 +17,7 @@ import tech.hirsun.jade.controller.exception.custom.ResourceNotFoundException;
 import tech.hirsun.jade.result.ErrorCode;
 import tech.hirsun.jade.result.Result;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class HTTPExceptionHandler {
         return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
     }
 
+    
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
         log.info("HTTP Controller Error - handleNoHandlerFoundException is caught: {}", ex.getMessage());
@@ -72,12 +74,12 @@ public class HTTPExceptionHandler {
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity handleGlobalException(Exception ex, WebRequest request) {
-        log.error("HTTP Controller Error - handleGlobalException is caught: {}", ex.getMessage());
-        Result result = Result.error(ErrorCode.OTHER_ERROR, request.getDescription(false));
-        return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity handleGlobalException(Exception ex, WebRequest request) {
+//        log.error("HTTP Controller Error - handleGlobalException is caught: {}", ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
+//        Result result = Result.error(ErrorCode.OTHER_ERROR, request.getDescription(false));
+//        return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     // 其他异常处理方法
 }

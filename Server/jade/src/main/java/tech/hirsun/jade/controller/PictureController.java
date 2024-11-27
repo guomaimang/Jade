@@ -1,7 +1,10 @@
 package tech.hirsun.jade.controller;
 
+import org.springframework.core.io.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +15,10 @@ import tech.hirsun.jade.service.PictureService;
 import tech.hirsun.jade.utils.JwtUtils;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 @Slf4j
@@ -39,31 +46,16 @@ public class PictureController {
         return Result.success(pictureService.getPicturesByTopicId(topicId, pageNum, pageSize));
     }
 
-    /**
-     * Get picture by picture id
-     * @param pictureId: picture id
-     */
-    @GetMapping("/get_file_by_picture_id")
-    private Result getFileByPictureId(@RequestParam Integer pictureId) {
-        log.info("Request picture by picture id: {}", pictureId);
-        return Result.success(pictureService.getFileByPictureId(pictureId));
-    }
-
-    /**
-     * Get picture thumbnail by picture id
-     */
-    @GetMapping("/get_thumbnail_by_picture_id")
-    private Result getThumbnailByPictureId(@RequestParam Integer pictureId) {
-        log.info("Request picture thumbnail by picture id: {}", pictureId);
-        return Result.success(pictureService.getThumbnailByPictureId(pictureId));
-    }
 
     /**
      * upload picture
-     * @param file: picture object
+     * @param file: file object
+     * @param picture: picture object json
      */
     @PostMapping("/upload")
-    private Result uploadPicture(@RequestHeader String jwt, @RequestBody MultipartFile file, @RequestBody Picture picture) throws Exception {
+    private Result uploadPicture(@RequestHeader String jwt,
+                                 @RequestParam("file") MultipartFile file,
+                                 @RequestParam("picture") Picture picture) throws Exception {
         int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
 
         if (file.isEmpty()) {
@@ -98,6 +90,54 @@ public class PictureController {
         log.info("Request delete picture by picture id: {}", pictureId);
         return Result.success(pictureService.deletePictureByPictureId(pictureId));
     }
+
+
+    /**
+     * Get picture file
+     * @param file_name: file name, like uuid.jpg
+     * @param user_id: user id, refer the user_id of the picture
+     * @param type: file type, thumbnail or picture
+     */
+    @GetMapping("/get_file")
+    private ResponseEntity<Resource> getPictureFile(@RequestHeader String jwt,
+                                                    @RequestParam String file_name,
+                                                    @RequestParam String user_id,
+                                                    @RequestParam String type) throws MalformedURLException {
+        // check if the user is logged in
+        int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
+
+        // check file name, only allow alphanumeric, dash, dot
+        if (!file_name.matches("^[a-zA-Z0-9-\\.]+$")) {
+            throw new BadRequestException("Invalid file name", ErrorCode.REQUEST_ILLEGAL);
+        }
+
+        // only support jpg, jpeg, png, heic
+        String fileExtension = StringUtils.getFilenameExtension(file_name);
+        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic)$")) {
+            throw new BadRequestException("Invalid file extension", ErrorCode.REQUEST_ILLEGAL);
+        }
+
+        // path = type / + user_id + "/" + file_name
+        String path;
+        if (type.equals("thumbnail")) {
+            path = "thumbnail/" + user_id + "/" + file_name;
+        } else if (type.equals("picture")) {
+            path = "picture/" + user_id + "/" + file_name;
+        } else {
+            throw new BadRequestException("Invalid file type", ErrorCode.REQUEST_ILLEGAL);
+        }
+
+        Resource resource = pictureService.getFile(path);
+
+        if (resource.exists() && resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } else {
+            throw new BadRequestException("File not found or not readable", ErrorCode.RESOURCE_NOT_FOUND);
+        }
+    }
+
 
     private long parseSize(String size) {
         size = size.toUpperCase();

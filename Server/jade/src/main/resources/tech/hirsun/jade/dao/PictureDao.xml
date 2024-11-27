@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tech.hirsun.jade.dao.PictureDao">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+        insert into picture (user_id, topic_id, view_count, uri, thumbnail_uri, location, coordinate_x, coordinate_y, title, create_time, description)
+        values (#{userId}, #{topicId}, #{viewCount}, #{uri}, #{thumbnailUri}, #{location}, #{coordinateX}, #{coordinateY}, #{title}, #{createTime}, #{description})
+    </insert>
+
+</mapper>

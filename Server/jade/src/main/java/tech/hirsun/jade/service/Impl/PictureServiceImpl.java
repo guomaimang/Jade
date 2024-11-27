@@ -2,16 +2,19 @@ package tech.hirsun.jade.service.Impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import tech.hirsun.jade.dao.PictureDao;
+import tech.hirsun.jade.dao.TopicDao;
 import tech.hirsun.jade.pojo.Picture;
 import tech.hirsun.jade.result.ErrorCode;
 import tech.hirsun.jade.service.PictureService;
-import tech.hirsun.jade.service.TopicService;
 
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +29,7 @@ public class PictureServiceImpl implements PictureService {
     private String picturesPath;
 
     @Autowired
-    private TopicService topicService;
+    private TopicDao topicDao;
 
     @Autowired
     private PictureDao pictureDao;
@@ -38,13 +41,14 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public Object getFileByPictureId(Integer pictureId) {
-        return null;
-    }
-
-    @Override
-    public Object getThumbnailByPictureId(Integer pictureId) {
-        return null;
+    public Resource getFile(String path) throws MalformedURLException {
+        Path filePath = Paths.get(picturesPath).resolve(path).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new BadRequestException("File not found", ErrorCode.RESOURCE_NOT_FOUND);
+        }
     }
 
     @Override
@@ -53,7 +57,7 @@ public class PictureServiceImpl implements PictureService {
         // Save the picture info
         picture.setId(null);
         picture.setUserId(userId);
-        if(picture.getTopicId() == null || topicService.checkExist(picture.getTopicId())) {
+        if(picture.getTopicId() == null || topicDao.count(picture.getTopicId()) > 0) {
             throw new BadRequestException("Topic does not exist", ErrorCode.RESOURCE_NOT_FOUND);
         }
         picture.setViewCount(0);
@@ -63,7 +67,9 @@ public class PictureServiceImpl implements PictureService {
 
         picture.setLocation(null);
         // check if the coordinate is valid
-        if (Double.parseDouble(picture.getCoordinateX()) > 90 || Double.parseDouble(picture.getCoordinateX()) < -90
+        if (picture.getCoordinateX() == null || picture.getCoordinateY() == null){
+        }
+        else if (Double.parseDouble(picture.getCoordinateX()) > 90 || Double.parseDouble(picture.getCoordinateX()) < -90
                 || Double.parseDouble(picture.getCoordinateY()) > 180 || Double.parseDouble(picture.getCoordinateY()) < -180){
             throw new BadRequestException("Coordinate is invalid", ErrorCode.UPLOAD_FILE_ERROR);
         }
@@ -100,4 +106,6 @@ public class PictureServiceImpl implements PictureService {
     public Integer deletePictureByPictureId(Integer pictureId) {
         return 0;
     }
+
+
 }

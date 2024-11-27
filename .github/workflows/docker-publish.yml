@@ -1,48 +1,62 @@
 name: Docker Image CI
-#触发器设置
+
 on:
   push:
     branches: [ "main" ]
+    tags: 
+      - 'v*.*.*'  # 监听所有版本标签推送
   pull_request:
     branches: [ "main" ]
 
-#项目任务，任务之间可以并行调度
 jobs:
-
   build:
-  #选择云端运行的环境
     runs-on: ubuntu-latest
+
     steps:
-    #uses代表使用一个模块，此处使用的是checkout模块，将github项目文件导入到当前环境中
     - uses: actions/checkout@v3
-    #使用with跟在后面来为前面的模块输入参数
       with:
         submodules: 'true'
+    
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
+    
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+    
     - name: Login to DockerHub
       uses: docker/login-action@v2
       with:
-     #这里用到了github的secrets功能，避免账户和密码随仓库泄露
-       username: ${{ secrets.DOCKER_USERNAME }}
-       password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Extract version information
+      id: extract_version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+          IS_VERSION=true
+        else
+          VERSION=$(date +%Y%m%d%H%M%S)
+          IS_VERSION=false
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "IS_VERSION=$IS_VERSION" >> $GITHUB_ENV
+    
     - name: Build and push
-      #导入这个模块来完成自动编译和推送
       uses: docker/build-push-action@v3
       with:
-          context: .
-          push: true
-          #在这里通过加入需要编译的平台和前面配好的QEMU，buildx来达到多平台编译
-          platforms: linux/amd64,linux/arm64
-          #指定用户/仓库名
-          tags: wmdscjhdpy/test:latest
+        context: .
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: |
+          guomaimang/jade:${{ env.VERSION }}
+          ${{ env.IS_VERSION == 'true' && 'guomaimang/jade:latest' }}
+
     - name: Docker Hub Description
-      #这里是通过md文件自动生成dockerhub描述的模块，也可以不需要
+      if: ${{ env.IS_VERSION == 'true' }}
       uses: peter-evans/dockerhub-description@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: wmdscjhdpy/autologin
-        readme-filepath: ./doc/docker-readme.md
+        repository: guomaimang/jade
+        readme-filepath: ./docker-readme.md

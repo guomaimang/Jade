@@ -60,4 +60,4 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: hanjiaming/jade
-          readme-filepath: .docker-readme.md
+          readme-filepath: ./docker-readme.md

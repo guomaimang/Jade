@@ -25,20 +25,39 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Extract version from tag
         id: extract_version
-        run: echo "::set-output name=VERSION::${GITHUB_REF#refs/tags/}"
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Determine if latest
+        id: determine_latest
+        env:
+          VERSION: ${{ steps.extract_version.outputs.VERSION }}
+        run: |
+          if [[ "$VERSION" == *"-release"* ]]; then
+            echo "LATEST=true" >> $GITHUB_OUTPUT
+          else
+            echo "LATEST=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Set tags
+        id: set_tags
+        env:
+          VERSION: ${{ steps.extract_version.outputs.VERSION }}
+          LATEST: ${{ steps.determine_latest.outputs.LATEST }}
+        run: |
+          TAGS="hanjiaming/jade:$VERSION"
+          if [ "$LATEST" = "true" ]; then
+            TAGS="$TAGS,hanjiaming/jade:latest"
+          fi
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: |
-            hanjiaming/jade:latest
-            hanjiaming/jade:${{ steps.extract_version.outputs.VERSION }}
+          tags: ${{ env.TAGS }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: hanjiaming/jade
-          readme-filepath: ./docker-readme.md
+          readme-filepath: .docker-readme.md

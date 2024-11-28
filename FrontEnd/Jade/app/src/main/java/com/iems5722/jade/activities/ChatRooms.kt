@@ -302,7 +302,7 @@ fun SingleChatroomShow(chatroom: Chatroom) {
             )
             Text(
                 text = chatroom.latestMessage,
-                style = TextStyle(fontSize = 10.sp)
+                style = TextStyle(color = Color.Gray, fontSize = 10.sp)
             )
         }
         Spacer(modifier = Modifier.weight(1f))

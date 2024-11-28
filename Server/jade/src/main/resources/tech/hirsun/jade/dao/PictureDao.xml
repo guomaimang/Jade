@@ -5,8 +5,8 @@
 <mapper namespace="tech.hirsun.jade.dao.PictureDao">
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
-        insert into picture (user_id, topic_id, view_count, uri, thumbnail_uri, location, coordinate_x, coordinate_y, title, create_time, description)
-        values (#{userId}, #{topicId}, #{viewCount}, #{uri}, #{thumbnailUri}, #{location}, #{coordinateX}, #{coordinateY}, #{title}, #{createTime}, #{description})
+        insert into picture (user_id, topic_id, view_count, file_name, location, coordinate_x, coordinate_y, title, create_time, description)
+        values (#{userId}, #{topicId}, #{viewCount}, #{fileName}, #{location}, #{coordinateX}, #{coordinateY}, #{title}, #{createTime}, #{description})
     </insert>
 
 </mapper>

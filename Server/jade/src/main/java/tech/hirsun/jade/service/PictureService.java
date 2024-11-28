@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 public interface PictureService {
     Picture getPicturesByTopicId(Integer topicId, Integer pageNum, Integer pageSize);
 
-    public Resource getFile(String path) throws MalformedURLException;
+    public Resource getFile(String subPath) throws MalformedURLException;
 
     Picture postPicture(MultipartFile file, Picture picture, Integer userId) throws Exception;
 

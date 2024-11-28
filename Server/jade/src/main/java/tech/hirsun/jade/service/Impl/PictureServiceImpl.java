@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
+import tech.hirsun.jade.utils.ThumbnailUtil;
 
 
 @Service
@@ -44,8 +45,8 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public Resource getFile(String path) throws MalformedURLException {
-        Path filePath = Paths.get(picturesPath).resolve(path).normalize();
+    public Resource getFile(String subPath) throws MalformedURLException {
+        Path filePath = Paths.get(picturesPath).resolve(subPath).normalize();
         Resource resource = new UrlResource(filePath.toUri());
         if (resource.exists() || resource.isReadable()) {
             return resource;
@@ -65,9 +66,6 @@ public class PictureServiceImpl implements PictureService {
         }
         picture.setViewCount(0);
 
-        picture.setUri(null);
-        picture.setThumbnailUri(null);
-
         picture.setLocation(null);
         // check if the coordinate is valid
         if (picture.getCoordinateX() == null || picture.getCoordinateY() == null){
@@ -85,23 +83,36 @@ public class PictureServiceImpl implements PictureService {
             throw new BadRequestException("Description is too long", ErrorCode.UPLOAD_FILE_ERROR);
         }
 
-        // Create directories if they do not exist
+        // Generate UUID file name
+        String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+        String uuid = UUID.randomUUID().toString();
+        String fileName = uuid + "." + fileExtension;
+
+        // For Picture: Create directories if they do not exist
         Path userDir = Paths.get(picturesPath, "picture" , userId.toString());
         if (!Files.exists(userDir)) {
             Files.createDirectories(userDir);
         }
 
-        // Generate UUID file name
-        String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-        String fileName = UUID.randomUUID() + "." + fileExtension;
-
-        // Save the file
+        // For Picture: Save the file
         Path filePath = userDir.resolve(fileName);
         Files.write(filePath, file.getBytes());
 
-        // Save the picture info
-        picture.setUri(filePath.toString());
+        // For Thumbnail: Create directories if they do not exist
+        Path thumbnailUserDir = Paths.get(picturesPath, "thumbnail" , userId.toString());
+        if (!Files.exists(thumbnailUserDir)) {
+            Files.createDirectories(thumbnailUserDir);
+        }
+
+        // For Thumbnail: Generate thumbnail
+        String thumbnailFileName = uuid + ".jpg";
+        Path thumbnailFilePath = thumbnailUserDir.resolve(thumbnailFileName);
+        ThumbnailUtil.generateThumbnail(filePath.toString(), thumbnailFilePath.toString(), 300, 200);
+
+        // For Picture: Save the picture info
+        picture.setFileName(fileName);
         picture.setId(pictureDao.insert(picture));
+
         return picture;
     }
 

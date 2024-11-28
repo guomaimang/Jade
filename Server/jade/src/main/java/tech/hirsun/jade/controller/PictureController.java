@@ -117,17 +117,19 @@ public class PictureController {
             throw new BadRequestException("Invalid file extension", ErrorCode.REQUEST_ILLEGAL);
         }
 
-        // path = type / + user_id + "/" + file_name
-        String path;
+        // subpath = type / + user_id + "/" + file_name
+        String subPath;
         if (resolution.equals("thumbnail")) {
-            path = "thumbnail/" + user_id + "/" + file_name;
+            // file_name: set file extension to jpg
+            file_name = file_name.substring(0, file_name.lastIndexOf(".")) + ".jpg";
+            subPath = "thumbnail/" + user_id + "/" + file_name;
         } else if (resolution.equals("picture")) {
-            path = "picture/" + user_id + "/" + file_name;
+            subPath = "picture/" + user_id + "/" + file_name;
         } else {
             throw new BadRequestException("Invalid file type", ErrorCode.REQUEST_ILLEGAL);
         }
 
-        Resource resource = pictureService.getFile(path);
+        Resource resource = pictureService.getFile(subPath);
 
         if (resource.exists() && resource.isReadable()) {
             String contentType = fileExtension.equals("jpg") || fileExtension.equals("jpeg") ? "image/jpeg" :

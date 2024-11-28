@@ -13,11 +13,9 @@ public class Picture {
     private Integer id;
     private Integer userId;
     private Integer topicId;
+    private String fileName;
+
     private Integer viewCount;
-
-    private String uri;
-    private String thumbnailUri;
-
     private String location;
     private String coordinateX;
     private String coordinateY;

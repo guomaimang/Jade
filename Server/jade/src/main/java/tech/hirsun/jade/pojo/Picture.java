@@ -21,6 +21,13 @@ public class Picture {
     private String coordinateY;
 
     private String title;
-    private Date createTime;
     private String description;
+    private Date createTime;
+
+    private String exifSize;
+    private String exifTime;
+    private String exifLatitude;
+    private String exifLongitude;
+    private String exifLocation;
+    private String exifDevice;
 }

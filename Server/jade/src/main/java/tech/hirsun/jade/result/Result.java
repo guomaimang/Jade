@@ -8,16 +8,17 @@ import java.util.Date;
 public class Result<T> {
 
     private int code;    // Response code, 0 for success; others for failure
-    private String msg;  // Response message
+    private String message;  // Response message
     private T data;      // Response data
-    private final Date dateStamp = new Date(); // Response date
-    private String comment; // Response details
+    private final Date timestamp = new Date(); // Response date
+    private String error; // error details
+    private String path; // request uri prompt
 
     private Result(T data) {
         this.code = 0;
-        this.msg = "success";
+        this.message = "success";
         this.data = data;
-        this.comment = null;
+        this.error = null;
     }
 
     // For success result
@@ -29,13 +30,14 @@ public class Result<T> {
     }
 
     // For error result
-    public static Result error(ErrorCode errorCode, String comment) {
+    public static Result error(ErrorCode errorCode, String path) {
 
         Result errResult = new Result<>(errorCode);
         errResult.code = errorCode.getCode();
-        errResult.msg = errorCode.getMessage();
+        errResult.message = "error";
         errResult.data = null;
-        errResult.comment = comment;
+        errResult.error = errorCode.getMessage();
+        errResult.path = path;
         return errResult;
     }
 

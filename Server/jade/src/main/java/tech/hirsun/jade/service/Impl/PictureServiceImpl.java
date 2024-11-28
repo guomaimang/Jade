@@ -1,7 +1,9 @@
 package tech.hirsun.jade.service.Impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -12,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import tech.hirsun.jade.dao.PictureDao;
 import tech.hirsun.jade.dao.TopicDao;
+import tech.hirsun.jade.pojo.PageBean;
 import tech.hirsun.jade.pojo.Picture;
 import tech.hirsun.jade.result.ErrorCode;
 import tech.hirsun.jade.service.PictureService;
@@ -21,16 +24,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import tech.hirsun.jade.utils.ThumbnailUtil;
+import tech.hirsun.jade.utils.PictureMetaUtil;
 
 
 @Service
+@Slf4j
 public class PictureServiceImpl implements PictureService {
 
-    private static final Logger log = LoggerFactory.getLogger(PictureServiceImpl.class);
     @Value("${pictures.path}")
     private String picturesPath;
+
+    @Value("${tencent.map.service.key}")
+    private String apiKey;
 
     @Autowired
     private TopicDao topicDao;
@@ -40,8 +49,18 @@ public class PictureServiceImpl implements PictureService {
 
 
     @Override
-    public Picture getPicturesByTopicId(Integer topicId, Integer pageNum, Integer pageSize) {
-        return null;
+    public PageBean getTopicPictures(Integer topicId, Integer pageNum, Integer pageSize) {
+        int count = pictureDao.count(topicId, null);
+
+        int start = (pageNum - 1) * pageSize;
+        List<Picture> pictures = pictureDao.list(topicId, null, start, pageSize);
+
+        return new PageBean(count, pictures, Math.floorDiv(count, pageSize) + 1, pageNum);
+    }
+
+    @Override
+    public Picture getInfo(Integer pictureId) {
+        return pictureDao.query(pictureId);
     }
 
     @Override
@@ -68,20 +87,30 @@ public class PictureServiceImpl implements PictureService {
 
         picture.setLocation(null);
         // check if the coordinate is valid
-        if (picture.getCoordinateX() == null || picture.getCoordinateY() == null){
-        }
-        else if (Double.parseDouble(picture.getCoordinateX()) > 90 || Double.parseDouble(picture.getCoordinateX()) < -90
-                || Double.parseDouble(picture.getCoordinateY()) > 180 || Double.parseDouble(picture.getCoordinateY()) < -180){
-            throw new BadRequestException("Coordinate is invalid", ErrorCode.UPLOAD_FILE_ERROR);
+        if (picture.getCoordinateX() != null && picture.getCoordinateY() != null){
+
+            if (Double.parseDouble(picture.getCoordinateY()) > 90 || Double.parseDouble(picture.getCoordinateY()) < -90
+                    || Double.parseDouble(picture.getCoordinateX()) > 180 || Double.parseDouble(picture.getCoordinateX()) < -180){
+                throw new BadRequestException("Coordinate is invalid", ErrorCode.UPLOAD_FILE_ERROR);
+            }else {
+                picture.setLocation(convertCoordinateToAddress(picture.getCoordinateY(), picture.getCoordinateX()));
+            }
         }
 
-        if (picture.getTitle().length() > 20){
+
+
+        if (picture.getTitle().length() > 30){
             throw new BadRequestException("Title is too long", ErrorCode.UPLOAD_FILE_ERROR);
         }
-        picture.setCreateTime(new Date());
         if (picture.getDescription().length() > 200){
             throw new BadRequestException("Description is too long", ErrorCode.UPLOAD_FILE_ERROR);
         }
+        picture.setCreateTime(new Date());
+        picture.setExifSize(null);
+        picture.setExifTime(null);
+        picture.setExifLatitude(null);
+        picture.setExifLongitude(null);
+        picture.setExifLocation(null);
 
         // Generate UUID file name
         String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
@@ -97,6 +126,23 @@ public class PictureServiceImpl implements PictureService {
         // For Picture: Save the file
         Path filePath = userDir.resolve(fileName);
         Files.write(filePath, file.getBytes());
+
+        // For Picture: read EXIF
+        HashMap<String, String> exifMap = PictureMetaUtil.printImageTags(filePath.toFile());
+        picture.setExifSize(exifMap.get("Image Height") + " x " + exifMap.get("Image Width"));
+        picture.setExifTime(exifMap.get("Date/Time Original"));
+        picture.setExifLatitude(exifMap.get("GPS Latitude"));
+        picture.setExifLongitude(exifMap.get("GPS Longitude"));
+
+        if (exifMap.get("Make") != null && exifMap.get("Model") != null){
+            picture.setExifDevice(exifMap.get("Make") + " " + exifMap.get("Model"));
+        }
+
+        if (exifMap.get("GPS Latitude") != null && exifMap.get("GPS Longitude") != null){
+            picture.setExifLocation(convertCoordinateToAddress(
+                    exifMap.get("GPS Latitude"),
+                    exifMap.get("GPS Longitude")));
+        }
 
         // For Thumbnail: Create directories if they do not exist
         Path thumbnailUserDir = Paths.get(picturesPath, "thumbnail" , userId.toString());
@@ -117,9 +163,51 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public Integer deletePictureByPictureId(Integer pictureId) {
+    public Integer deletePicture(Integer pictureId) {
         return 0;
     }
 
+    public String convertCoordinateToAddress(String latitude, String longitude) {
+        if (apiKey == null) {
+            log.error("API key is not available");
+            return null;
+        }
+
+        OkHttpClient client = new OkHttpClient();
+        String url = String.format("https://apis.map.qq.com/ws/geocoder/v1/?location=%s,%s&key=%s", latitude, longitude, apiKey);
+        log.info("Request URL: {}", url);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        Call call = client.newCall(request);
+        try (Response response = call.execute()) {
+            if (!response.isSuccessful()) {
+                log.error("Unexpected code: {}", response);
+                return null;
+            }
+
+            String rspBody = response.body().string();
+            log.info("Response body: {}", rspBody);
+            JSONObject jsonObject = JSON.parseObject(rspBody);
+            JSONObject result = jsonObject.getJSONObject("result");
+            if (result != null) {
+                JSONObject formattedAddresses = result.getJSONObject("formatted_addresses");
+                if (formattedAddresses != null) {
+                    String standardAddress = formattedAddresses.getString("standard_address");
+                    if (standardAddress != null) {
+                        return standardAddress;
+                    }
+                }
+                return result.getString("address");
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Error in convertCoordinateToAddress", e);
+            return null;
+        }
+    }
 
 }

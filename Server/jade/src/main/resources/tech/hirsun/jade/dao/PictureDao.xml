@@ -5,8 +5,33 @@
 <mapper namespace="tech.hirsun.jade.dao.PictureDao">
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
-        insert into picture (user_id, topic_id, view_count, file_name, location, coordinate_x, coordinate_y, title, create_time, description)
-        values (#{userId}, #{topicId}, #{viewCount}, #{fileName}, #{location}, #{coordinateX}, #{coordinateY}, #{title}, #{createTime}, #{description})
+        insert into picture (user_id, topic_id, file_name, location, coordinate_x, coordinate_y, title, description, create_time, exif_size, exif_time, exif_latitude, exif_longitude, exif_location, exif_device)
+        values (#{userId}, #{topicId}, #{fileName}, #{location}, #{coordinateX}, #{coordinateY}, #{title}, #{description}, #{createTime}, #{exifSize}, #{exifTime}, #{exifLatitude}, #{exifLongitude}, #{exifLocation}, #{exifDevice})
     </insert>
+
+    <select id="list" parameterType="java.util.Map" resultType="tech.hirsun.jade.pojo.Picture">
+        SELECT * FROM picture
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="topicId != null">
+                AND topic_id = #{topicId}
+            </if>
+        </where>
+        ORDER BY id DESC LIMIT #{start}, #{pageSize}
+    </select>
+
+    <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT count(*) FROM `picture`
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="topicId != null">
+                AND topic_id = #{topicId}
+            </if>
+        </where>
+    </select>
 
 </mapper>

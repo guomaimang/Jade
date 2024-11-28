@@ -38,12 +38,12 @@ public class PictureController {
      * @param pageNum: the page number, default is 1
      * @param pageSize: the page size, default is 20
      */
-    @GetMapping("/get_list_by_topic_id")
-    private Result getListByTopicId(@RequestParam Integer topicId,
+    @GetMapping("/list")
+    private Result listByTopicId(@RequestParam Integer topicId,
                                            @RequestParam(defaultValue = "1") Integer pageNum,
                                            @RequestParam(defaultValue = "20") Integer pageSize) {
         log.info("Request pictures by topic id: {}, pageNum: {}, pageSize: {}", topicId, pageNum, pageSize);
-        return Result.success(pictureService.getPicturesByTopicId(topicId, pageNum, pageSize));
+        return Result.success(pictureService.getTopicPictures(topicId, pageNum, pageSize));
     }
 
 
@@ -85,10 +85,10 @@ public class PictureController {
      * Delete picture by picture id
      * @param pictureId: picture id
      */
-    @DeleteMapping("/delete_by_picture_id")
-    private Result deleteByPictureId(@RequestParam Integer pictureId) {
+    @DeleteMapping("/delete")
+    private Result deletePicture(@RequestParam Integer pictureId) {
         log.info("Request delete picture by picture id: {}", pictureId);
-        return Result.success(pictureService.deletePictureByPictureId(pictureId));
+        return Result.success(pictureService.deletePicture(pictureId));
     }
 
 
@@ -99,12 +99,9 @@ public class PictureController {
      * @param resolution: file type, thumbnail or picture
      */
     @GetMapping("/get_file")
-    private ResponseEntity<Resource> getPictureFile(@RequestHeader String jwt,
-                                                    @RequestParam String file_name,
+    private ResponseEntity<Resource> getPictureFile(@RequestParam String file_name,
                                                     @RequestParam String user_id,
                                                     @RequestParam String resolution) throws MalformedURLException {
-        // check if the user is logged in
-        int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
 
         // check file name, only allow alphanumeric, dash, dot
         if (!file_name.matches("^[a-zA-Z0-9-\\.]+$")) {
@@ -142,6 +139,13 @@ public class PictureController {
         } else {
             throw new BadRequestException("File not found or not readable", ErrorCode.RESOURCE_NOT_FOUND);
         }
+    }
+
+    @GetMapping("/info")
+    private Result getPictureInfo(@RequestParam Integer pictureId) {
+        log.info("Request picture info, pictureId: {}", pictureId);
+
+        return Result.success(pictureService.getInfo(pictureId));
     }
 
 

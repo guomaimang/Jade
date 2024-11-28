@@ -33,7 +33,7 @@ public class HTTPExceptionHandler {
         return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
     }
 
-    
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
         log.info("HTTP Controller Error - handleNoHandlerFoundException is caught: {}", ex.getMessage());

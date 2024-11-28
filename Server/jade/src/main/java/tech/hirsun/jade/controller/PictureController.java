@@ -4,6 +4,7 @@ import org.springframework.core.io.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,9 @@ import tech.hirsun.jade.service.PictureService;
 import tech.hirsun.jade.utils.JwtUtils;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
+import tech.hirsun.jade.utils.StringAndBeanConventer;
 
 import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 @Slf4j
@@ -55,7 +55,7 @@ public class PictureController {
     @PostMapping("/upload")
     private Result uploadPicture(@RequestHeader String jwt,
                                  @RequestParam("file") MultipartFile file,
-                                 @RequestParam("picture") Picture picture) throws Exception {
+                                 @RequestParam String picture) throws Exception {
         int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
 
         if (file.isEmpty()) {
@@ -78,7 +78,7 @@ public class PictureController {
             throw new BadRequestException("Invalid file extension", ErrorCode.UPLOAD_FILE_TYPE_ERROR);
         }
 
-        return Result.success(pictureService.postPicture(file, picture, loggedInUserId));
+        return Result.success(pictureService.postPicture(file, StringAndBeanConventer.stringToBean(picture, Picture.class), loggedInUserId));
     }
 
     /**
@@ -96,13 +96,13 @@ public class PictureController {
      * Get picture file
      * @param file_name: file name, like uuid.jpg
      * @param user_id: user id, refer the user_id of the picture
-     * @param type: file type, thumbnail or picture
+     * @param resolution: file type, thumbnail or picture
      */
     @GetMapping("/get_file")
     private ResponseEntity<Resource> getPictureFile(@RequestHeader String jwt,
                                                     @RequestParam String file_name,
                                                     @RequestParam String user_id,
-                                                    @RequestParam String type) throws MalformedURLException {
+                                                    @RequestParam String resolution) throws MalformedURLException {
         // check if the user is logged in
         int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
 
@@ -119,9 +119,9 @@ public class PictureController {
 
         // path = type / + user_id + "/" + file_name
         String path;
-        if (type.equals("thumbnail")) {
+        if (resolution.equals("thumbnail")) {
             path = "thumbnail/" + user_id + "/" + file_name;
-        } else if (type.equals("picture")) {
+        } else if (resolution.equals("picture")) {
             path = "picture/" + user_id + "/" + file_name;
         } else {
             throw new BadRequestException("Invalid file type", ErrorCode.REQUEST_ILLEGAL);
@@ -130,7 +130,11 @@ public class PictureController {
         Resource resource = pictureService.getFile(path);
 
         if (resource.exists() && resource.isReadable()) {
+            String contentType = fileExtension.equals("jpg") || fileExtension.equals("jpeg") ? "image/jpeg" :
+                    fileExtension.equals("png") ? "image/png" :
+                            fileExtension.equals("heic") ? "image/heic" : "application/octet-stream";
             return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
         } else {

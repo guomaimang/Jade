@@ -33,3 +33,5 @@ google-services.json
 *.hprof
 REF/.DS_Store
 .DS_Store
+
+/Server/jade/resource

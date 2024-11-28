@@ -13,7 +13,7 @@ public class JwtUtils {
     @Setter
     private static String signKey = "NuwhbujHwsvJpwq2peJGkw23ejTmhqoqh2tydkei9izheoo9";
     @Setter
-    private static Long expirePeriod = 86400000L; // 24 hours
+    private static Long expirePeriod = 86400000L * 14; // 24 hours * 14 = 14 days
 
     /**
      * Generate a JWT token

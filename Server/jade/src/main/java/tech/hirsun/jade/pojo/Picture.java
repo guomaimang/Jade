@@ -16,7 +16,7 @@ public class Picture {
     private Integer viewCount;
 
     private String uri;
-    private String thumbnailUrl;
+    private String thumbnailUri;
 
     private String location;
     private String coordinateX;

@@ -1,5 +1,7 @@
 package tech.hirsun.jade.service.Impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -25,6 +27,7 @@ import java.util.UUID;
 @Service
 public class PictureServiceImpl implements PictureService {
 
+    private static final Logger log = LoggerFactory.getLogger(PictureServiceImpl.class);
     @Value("${pictures.path}")
     private String picturesPath;
 
@@ -57,13 +60,13 @@ public class PictureServiceImpl implements PictureService {
         // Save the picture info
         picture.setId(null);
         picture.setUserId(userId);
-        if(picture.getTopicId() == null || topicDao.count(picture.getTopicId()) > 0) {
+        if(picture.getTopicId() == null || topicDao.count(picture.getTopicId()) < 0) {
             throw new BadRequestException("Topic does not exist", ErrorCode.RESOURCE_NOT_FOUND);
         }
         picture.setViewCount(0);
 
         picture.setUri(null);
-        picture.setThumbnailUrl(null);
+        picture.setThumbnailUri(null);
 
         picture.setLocation(null);
         // check if the coordinate is valid
@@ -83,7 +86,7 @@ public class PictureServiceImpl implements PictureService {
         }
 
         // Create directories if they do not exist
-        Path userDir = Paths.get(picturesPath, userId.toString());
+        Path userDir = Paths.get(picturesPath, "picture" , userId.toString());
         if (!Files.exists(userDir)) {
             Files.createDirectories(userDir);
         }

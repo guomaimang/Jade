@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Docker Hub API URL
+API_URL="https://registry.hub.docker.com/v2/repositories/hanjiaming/jade/tags"
+
+# Fetch the tags from the API
+response=$(curl -s $API_URL)
+
+# Extract the tags that end with -dev and sort them by last_updated
+latest_tag=$(echo $response | jq -r '.results[] | select(.name | endswith("-dev")) | {name, last_updated} | @base64' | \
+    while read -r tag; do
+        echo $tag | base64 --decode | jq -r '[.name, .last_updated] | @tsv'
+    done | sort -k2 -r | head -n1 | cut -f1)
+
+# Check if a tag was found
+if [ -z "$latest_tag" ]; then
+    echo "No -dev tags found."
+    exit 1
+fi
+
+# Stop and remove the container if it exists
+docker stop jade 2>/dev/null
+docker rm jade 2>/dev/null
+
+# Remove the old image if it exists
+old_image=$(docker images hanjiaming/jade -q)
+if [ -n "$old_image" ]; then
+    docker rmi -f $old_image
+fi
+
+# Pull the latest -dev tag
+docker pull hanjiaming/jade:$latest_tag
+
+# Run the new container
+docker run -p 3128:8080 -d --name jade \
+    -e MYSQL_URL="jdbc:mysql://172.17.0.1:3306/jade?useUnicode=true&characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true" \
+    -e MYSQL_USERNAME=jade \
+    -e MYSQL_PASSWORD=123456 \
+    -e REDIS_HOST=172.17.0.1 \
+    -e REDIS_PORT=6379 \
+    -e REDIS_PASSWORD= \
+    -e REDIS_DATABASE=4 \
+    hanjiaming/jade:$latest_tag

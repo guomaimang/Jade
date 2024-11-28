@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +19,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -30,62 +36,69 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
-import com.iems5722.jade.utils.ImageUploadHelper
 
-class Album : ComponentActivity() {
+class ChatRooms : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
         setContent {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    AlbumScreen()
+                    chatRoomsScreen()
                 }
             }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
 @Composable
-@Preview
-fun AlbumScreen() {
-    // TODO:
-    var context = LocalContext.current
-    val imageUploadHelper = ImageUploadHelper()
+fun chatRoomsScreen() {
+    // TODO: Get my nickname and avatar
+    val nickname = "Nickname"
+    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
 
-    val photoPickerLauncher = imageUploadHelper.setupMediaPickerWithUpload(
-        context = context,
-        onSuccess = {
-            Toast.makeText(context, "上传成功并跳转完成", Toast.LENGTH_SHORT).show()
-        },
-        onError = { error ->
-            Toast.makeText(context, "发生错误: $error", Toast.LENGTH_SHORT).show()
-        }
+    // TODO: Get ChatRooms
+    val testChatroomId = "1"
+    val testChatroomName = "Test"
+    val testChatroomAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val testLatestMessage = "Hello"
+    val testLatestMessageTime = "Today 13:14"
+    val testUnRead = 0
+
+    var chatRoomList by remember { mutableStateOf(listOf<Chatroom>()) }
+    chatRoomList = listOf(
+        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead),
+        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead),
+        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead)
     )
 
+
+    val context = LocalContext.current
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
-
     Box(
         // Background layer
         modifier = Modifier
@@ -119,9 +132,43 @@ fun AlbumScreen() {
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(32.dp))
-                Text(text = stringResource(R.string.AlbumString))
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    modifier = Modifier.clickable(
+                        onClick = {
+                            // TODO: What to pass for setting?
+
+                            val intent = Intent(context, Setting::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(avatar)
+                            .crossfade(true)
+                            .build(),
+                        placeholder = painterResource(R.drawable.placeholder),
+                        contentDescription = "user_img",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(48.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+//                    Text(text = stringResource(R.string.app_name))
+                    Text(
+                        text = nickname,
+                        style = TextStyle(fontSize = 24.sp),
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(1f))
+
+
+
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
 
@@ -197,32 +244,101 @@ fun AlbumScreen() {
                 .align(Alignment.TopCenter)
                 .background(Color.Transparent)
         ) {
-            Column {
-                // Leave place for header
-                Spacer(modifier = Modifier.height(headerHeight.dp))
-
-                // TODO: LazyColumn
-                LazyColumn {
-                    // item ?
+            LazyColumn {
+                item{
+                    // Leave place for header
+                    Spacer(modifier = Modifier.height(headerHeight.dp))
                 }
 
-
-                // Usage of Image(From Web)
-//                AsyncImage(
-//                    model = ImageRequest.Builder(LocalContext.current)
-//                        .data(self_fig)
-//                        .crossfade(true)
-//                        .build(),
-//                    placeholder = painterResource(R.drawable.placeholder),
-//                    contentDescription = "user_img",
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .clip(CircleShape)
-//                        .size(48.dp),
-//                )
-//                Text(text = "Topic")
-                // TODO: LazyColumn List
+                itemsIndexed(chatRoomList) { index, chatroom ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SingleChatroomShow(chatroom)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (index != chatRoomList.size -1) {
+                        HorizontalDivider()
+                    }else {
+                        Spacer(modifier = Modifier.height(bottomHeight.dp))
+                    }
+                }
             }
         }
     }
 }
+
+@Composable
+fun SingleChatroomShow(chatroom: Chatroom) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier.clickable(
+            onClick = {
+                // TODO: What to bring?
+
+                val intent = Intent(context, ChatActivities::class.java)
+                context.startActivity(intent)
+            }
+        )
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(chatroom.chatroomAvatar)
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.placeholder),
+            contentDescription = "user_img",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(48.dp)
+                .align(Alignment.CenterVertically)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
+        ) {
+            Text(
+                text = chatroom.chatroomName,
+                style = TextStyle(fontSize = 20.sp)
+            )
+            Text(
+                text = chatroom.latestMessage,
+                style = TextStyle(fontSize = 10.sp)
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                text = chatroom.latestMessageTime,
+                style = TextStyle(fontSize = 10.sp)
+            )
+            val flag = (chatroom.unRead == 0)
+            if (flag){
+                Text(
+                    text = "${chatroom.unRead}",
+                    style = TextStyle(color = Color.Gray)
+                )
+            }else{
+                Text(
+                    text = "${chatroom.unRead}",
+                    style = TextStyle(color = Color.Red)
+                )
+            }
+
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+    }
+}
+
+data class Chatroom(
+    var chatroomId: String,
+    var chatroomAvatar: String,
+    var chatroomName: String,
+    var latestMessage: String,
+    var latestMessageTime: String,
+    var unRead: Int
+)
+

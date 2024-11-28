@@ -47,7 +47,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,7 +104,7 @@ fun TopicScreen() {
     val testUserNickname = "Test"
     val testTime = "Today 13:14"
 
-    var context = LocalContext.current
+    val context = LocalContext.current
     val imageUploadHelper = ImageUploadHelper()
 
     val photoPickerLauncher = imageUploadHelper.setupMediaPickerWithUpload(
@@ -135,6 +134,12 @@ fun TopicScreen() {
         Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
         Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
     )
+
+    // TODO: Get user name and user image
+    val nickname = "Nickname"
+    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
+
+
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -173,20 +178,53 @@ fun TopicScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(R.string.app_name))
+                Row(
+                    modifier = Modifier.clickable(
+                        onClick = {
+                            // TODO: What to pass for setting?
+
+                            val intent = Intent(context, Setting::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(avatar)
+                            .crossfade(true)
+                            .build(),
+                        placeholder = painterResource(R.drawable.placeholder),
+                        contentDescription = "user_img",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(48.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+//                    Text(text = stringResource(R.string.app_name))
+                    Text(
+                        text = nickname,
+                        style = TextStyle(fontSize = 24.sp),
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
                     onClick = {
-                        // TODO: What to deliver?
-                        val intent = Intent(context, Setting::class.java)
-                        context.startActivity(intent)
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                            )
+                        )
                     },
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.settings),
-                        contentDescription = "Settings"
+                        painter = painterResource(id = R.drawable.plus),
+                        contentDescription = "Upload"
                     )
                 }
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
 
@@ -225,17 +263,15 @@ fun TopicScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
-                                )
-                            )
+                            // TODO: What to deliver?
+                            val intent = Intent(context, ChatRooms::class.java)
+                            context.startActivity(intent)
                         },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.plus),
-                            contentDescription = "Upload"
+                            painter = painterResource(id = R.drawable.chatrooms),
+                            contentDescription = "Chatroom"
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -308,7 +344,7 @@ fun TopicScreen() {
                         .fillMaxSize()
                         .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
                 ) {
-                    postList.forEachIndexed { index, postItem ->
+                    postList.forEachIndexed { _, postItem ->
                         item {
                             PostItemShow(postItem)
                         }
@@ -349,7 +385,7 @@ fun PostItemShow(postItem: Post) {
                     onClick = {
                         // TODO: What to pass for select post?
 
-                        var intent = Intent(context, Detail::class.java)
+                        val intent = Intent(context, Detail::class.java)
                         context.startActivity(intent)
                     }
                 )
@@ -386,15 +422,33 @@ fun PostItemShow(postItem: Post) {
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(32.dp)
+                        .align(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = postItem.userNickname,
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
+                Spacer(modifier = Modifier.weight(1f))
+                val timeString = timeToShow(postItem.time)
+                Text(
+                    text = timeString,
+                    style = TextStyle(color = Color.Gray, fontSize = 10.sp),
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
             }
         }
     }
+}
+
+// TODO: if time is lick timestamp or something, transfer
+fun timeToShow(time: String): String {
+    val timeReturn:String
+
+    // TODO: let time to be like Today 11:00 or 2 hours ago or yesterday xxx or 1 01-01 or something
+    timeReturn = time
+
+    return timeReturn
 }
 //@Preview(showBackground = true)
 //@Composable

@@ -19,3 +19,19 @@ hanjiaming/jade:v0.0.3-dev
 ```
 
 Please modify the environment variables according to your environment, if necessary.
+
+
+
+## GPT usage
+
+- How to use **Masonry Layouts** in Kotlin
+  - Use LazyVerticalStaggeredGrid
+- 
+
+## Ref
+
+1. https://www.iconfont.cn/collections/detail?spm=a313x.collections_index.i1.d9df05512.2cfe3a81iKXHIn&cid=50028
+2. https://developer.android.com/develop/ui/compose/lists?hl=zh-cn
+3. https://coil-kt.github.io/coil/
+4. 
+

@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -27,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,8 +75,24 @@ fun SettingScreen(modifier: Modifier = Modifier) {
     val nickname = "nickname"
     val mail = "name@subdomin.domain"
 
+    // TODO: Get my post
+    val testImage0 = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
+    val testImage = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252350295.png"
+    val testTitle = "Test Title"
+    val testContent = "Test content"
+    val testUserAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val testUserNickname = "Test"
+    val testTime = "Today 13:14"
 
-    var context = LocalContext.current
+    var myPostList by remember { mutableStateOf(listOf<Post>()) }
+    myPostList = listOf(
+        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
+        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
+        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
+    )
+
+
+    val context = LocalContext.current
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -133,15 +152,14 @@ fun SettingScreen(modifier: Modifier = Modifier) {
             Column {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
                         // TODO: jump to ?
                         onClick = {
-                            var intent = Intent(context, Topic::class.java)
+                            val intent = Intent(context, Topic::class.java)
                             context.startActivity(intent)
                         },
                         modifier = Modifier.weight(1f)
@@ -153,22 +171,23 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
-                        // TODO: Upload logic
                         onClick = {
-
+                            // TODO: What to deliver?
+                            val intent = Intent(context, ChatRooms::class.java)
+                            context.startActivity(intent)
                         },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.plus),
-                            contentDescription = "Upload"
+                            painter = painterResource(id = R.drawable.chatrooms),
+                            contentDescription = "Chatroom"
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         // TODO: What to bring?
                         onClick = {
-                            var intent = Intent(context, Album::class.java)
+                            val intent = Intent(context, Album::class.java)
                             context.startActivity(intent)
                         },
                         modifier = Modifier.weight(1f)
@@ -186,7 +205,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
             // Lazy Column
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
                 .align(Alignment.TopCenter)
                 .background(Color.Transparent)
         ) {
@@ -194,66 +212,84 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                 // Leave place for header
                 Spacer(modifier = Modifier.height(headerHeight.dp))
 
-                Box(
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                    // TODO: background needed?
+                        .align(Alignment.CenterHorizontally)
+                        .background(Color.White)
+                        .padding(8.dp)
                 ) {
-                    Column(
+                    Spacer(modifier = Modifier.width(8.dp))
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(avatar)
+                            .crossfade(true)
+                            .build(),
+                        placeholder = painterResource(R.drawable.placeholder),
+                        contentDescription = "user_img",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .clip(CircleShape)
+                            .size(72.dp)
+                    )
+                    Spacer(modifier = Modifier.width(32.dp))
+                    Column(
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Row(
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(avatar)
-                                    .crossfade(true)
-                                    .build(),
-                                placeholder = painterResource(R.drawable.placeholder),
-                                contentDescription = "user_img",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(72.dp)
-                            )
-                            Spacer(modifier = Modifier.width(32.dp))
-                            Column(
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = nickname,
-                                    style = TextStyle(fontSize = 20.sp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = mail,
-                                    style = TextStyle(fontSize = 16.sp)
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = nickname,
+                            style = TextStyle(fontSize = 20.sp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = mail,
+                            style = TextStyle(fontSize = 16.sp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
 
-                        Spacer(modifier = Modifier.height(256.dp))
+                    IconButton(
+                        // TODO: Brings what?
+                        onClick = {
 
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .clickable(
-                                    onClick = {
-                                        var intent = Intent(context, MainActivity::class.java)
-                                        context.startActivity(intent)
-                                    }
-                                )
-                        ) {
-                            Text(
-                                text = "Log out",
-                                style = TextStyle(color = Color.Cyan, fontSize = 24.sp)
-                            )
+                            val intent = Intent(context, MainActivity::class.java)
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.log_out),
+                            contentDescription = "Sign Out",
+                            tint = Color.Red
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(text = stringResource(R.string.SettingTitle))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
+                ) {
+                    myPostList.forEachIndexed { _, postItem ->
+                        item {
+                            PostItemShow(postItem)
                         }
                     }
                 }

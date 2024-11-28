@@ -2,18 +2,16 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,9 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -57,7 +52,8 @@ import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 
-class Detail : ComponentActivity() {
+class ChatActivities : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,43 +61,48 @@ class Detail : ComponentActivity() {
         setContent {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    DetailScreen()
+                    ChatActivitiesScreen()
                 }
             }
         }
     }
 }
 
+data class Message(
+    var messageId: String,
+    var senderId: String,
+    var senderAvatar: String,
+    var senderNickname: String,
+    var messageString: String,
+    var messageTime: String
+)
 
 @Composable
-@Preview
-fun DetailScreen() {
-    // TODO: Get Pictures
+fun ChatActivitiesScreen() {
+    // TODO: Get Chatroom's nickname and avatar
+    val nickname = "Nickname"
+    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
 
-    val testPic = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411260316528.png"
-    val picList = listOf(
-        testPic,
-        testPic,
-        testPic,
-        testPic,
-        testPic,
+    // TODO: Get Messages
+    val testMessageId = "1"
+    val testSenderId = "12345"
+    val testSenderAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val testSenderNickname = "TestSender"
+    val testMessageString = "Hello"
+    val testMessageTime = "Today 13:14"
+
+    var messageList by remember { mutableStateOf(listOf<Message>()) }
+    messageList = listOf(
+        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
+        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
+        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
+        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
     )
 
-    // TODO: Get Post Title and content
-
-    val postTitle = "Test"
-    val postContent = "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest"
-
-    // TODO: This is the post's not current user's
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val nickname = "nickname"
-
-    var context = LocalContext.current
-
+    val context = LocalContext.current
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
-
     Box(
         // Background layer
         modifier = Modifier
@@ -137,9 +138,8 @@ fun DetailScreen() {
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(
-                    // TODO: jump to ?
                     onClick = {
-                        val intent = Intent(context, Topic::class.java)
+                        val intent = Intent(context, ChatRooms::class.java)
                         context.startActivity(intent)
                     },
                 ) {
@@ -150,17 +150,7 @@ fun DetailScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Row(
-//                    // If need to access target account info
-//                    modifier = Modifier.clickable(
-//                        onClick = {
-//                            // TODO: What to pass for setting?
-//
-//                            val intent = Intent(context, Setting::class.java)
-//                            context.startActivity(intent)
-//                        }
-//                    )
-                ) {
+                Row{
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(avatar)
@@ -183,22 +173,7 @@ fun DetailScreen() {
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    // TODO: Brings what?
-                    onClick = {
-
-                        val intent = Intent(context, Album::class.java)
-                        context.startActivity(intent)
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.map),
-                        contentDescription = "Map"
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
             }
-
         }
 
         Box(
@@ -212,8 +187,17 @@ fun DetailScreen() {
                 }
                 .zIndex(1f)
         ) {
-            // TODO: Bottom : commitment input like chatroom
-
+            // TODO: Bottom
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // TODO: Input?
+                }
+            }
         }
 
         Box(
@@ -225,104 +209,25 @@ fun DetailScreen() {
                 .background(Color.Transparent)
         ) {
             LazyColumn {
-                item { Spacer(modifier = Modifier.height(headerHeight.dp)) }
-                item { banner(picList) }
-                item { DetailPostShow(postTitle, postContent) }
-                item { PostDivider() }
-
-                item {
-                    // TODO: Copy your chatroom
+                item{
+                    // Leave place for header
+                    Spacer(modifier = Modifier.height(headerHeight.dp))
                 }
 
-                item { Spacer(modifier = Modifier.height(bottomHeight.dp)) }
+                itemsIndexed(messageList) { index, message ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SingleMessageShow(message)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (index == messageList.size -1) {
+                        Spacer(modifier = Modifier.height(bottomHeight.dp))
+                    }
+                }
             }
-
-
         }
     }
 }
 
 @Composable
-fun PostDivider() {
-    Text(
-        text = stringResource(R.string.CommitArea),
-        style = TextStyle(color = Color.Black, fontSize = 16.sp)
-    )
-    Spacer(modifier = Modifier.height(4.dp))
-    HorizontalDivider()
-    Spacer(modifier = Modifier.height(16.dp))
-}
-
-@Composable
-fun DetailPostShow(postTitle: String, postContent: String) {
-    Text(
-        text = postTitle,
-        style = TextStyle(color = Color.Black, fontSize = 24.sp)
-    )
-
-    Text(
-        text = postContent,
-        style = TextStyle(color = Color.Black, fontSize = 16.sp)
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-}
-
-@Composable
-fun banner(picList: List<String>) {
-    val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { picList.size })
-    Column {
-        Box {
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(horizontal = 32.dp),
-                pageSpacing = 16.dp
-            ) { page ->
-                // Our page content
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(picList[page])
-                        .build(),
-                    placeholder = painterResource(R.drawable.placeholder),
-                    contentDescription = "user_img",
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            onClick = {
-                                // TODO: If click do what?
-
-                            }
-                        )
-                )
-            }
-
-            DotIndicators(
-                pageCount = picList.size,
-                pagerState = pagerState,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-fun DotIndicators(
-    pageCount: Int,
-    pagerState: PagerState,
-    modifier: Modifier
-) {
-    Row(modifier = modifier) {
-        repeat(pageCount) { iteration ->
-            val color = if (pagerState.currentPage == iteration) Color.Black else Color.Gray
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(color)
-            )
-        }
-    }
+fun SingleMessageShow(message: Message) {
+    // TODO: your chatroom
 }

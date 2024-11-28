@@ -65,6 +65,26 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.ChatRooms"
+            android:exported="true"
+            android:theme="@style/Theme.Jade">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activities.ChatActivities"
+            android:exported="true"
+            android:theme="@style/Theme.Jade">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".activities.Setting"
             android:exported="true"
             android:theme="@style/Theme.Jade">

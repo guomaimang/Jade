@@ -23,6 +23,9 @@ ENV JWT_EXPIRE_PERIOD=1209600000
 ENV MYSQL_URL=jdbc:mysql://172.17.0.1:3306/jade?useUnicode=true&characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
 ENV MYSQL_USERNAME=jade
 ENV MYSQL_PASSWORD=123456
+ENV AZURE_AD_TENANT_ID=common
+ENV AZURE_AD_REDIRECT_URI=http://localhost:8080/oauth2.html
+ENV KAFKA_BOOTSTRAP_SERVERS=10.1.0.8:9092
 
 # 从编译好的镜像中将jar拷贝到运行时容器，并重命名为app.jar
 COPY --from=builder /project/app.jar /app.jar

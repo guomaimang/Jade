@@ -1,5 +1,6 @@
 package tech.hirsun.jade.redis.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -9,6 +10,7 @@ import tech.hirsun.jade.redis.KeyPrefix;
 import static tech.hirsun.jade.utils.StringAndBeanConventer.beanToString;
 import static tech.hirsun.jade.utils.StringAndBeanConventer.stringToBean;
 
+@Slf4j
 @Service
 public class RedisBasicService {
 

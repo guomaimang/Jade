@@ -1,5 +1,6 @@
 package tech.hirsun.jade.dao;
 
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import tech.hirsun.jade.pojo.User;
@@ -14,4 +15,7 @@ public interface UserDao {
 
     @Select("select * from user where email = #{email}")
     public User getUserByEmail(@Param("email")String email);
+
+    @Insert("insert into user (nickname, email, password) values (#{nickname}, #{email}, #{password})")
+    public void insert(User user);
 }

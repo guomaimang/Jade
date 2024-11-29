@@ -6,6 +6,8 @@ import tech.hirsun.jade.pojo.User;
 import tech.hirsun.jade.service.UserService;
 import tech.hirsun.jade.dao.UserDao;
 
+import java.util.UUID;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -29,11 +31,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User ssoLogin(String email, String displayName) {
-        return null;
+        User dbUser = userDao.getUserByEmail(email);
+        if (dbUser != null) {
+            return dbUser;
+        }
+
+        User draftUser = new User();
+
+        draftUser.setNickname(displayName);
+        draftUser.setEmail(email);
+        draftUser.setPassword(UUID.randomUUID().toString());
+        userDao.insert(draftUser);
+        draftUser.setPassword(null);
+
+        return draftUser;
     }
 
     @Override
     public User getUserInfo(Integer id) {
-        return null;
+        User user = userDao.getUserById(id);
+        user.setPassword(null);
+        user.setEmail(null);
+        return user;
     }
 }

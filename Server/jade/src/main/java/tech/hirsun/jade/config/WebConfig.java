@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/userauth/refreshtoken")
                 .addPathPatterns("/picture/**")
                 .addPathPatterns("/message/**")
+                .addPathPatterns("/user/**")
                 .order(0);
     }
 }

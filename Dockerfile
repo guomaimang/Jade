@@ -15,6 +15,15 @@ RUN mv target/*.jar /project/app.jar
 
 FROM eclipse-temurin:22-jre
 
+# 设置默认的环境变量
+ENV PICTURES_PATH=resource
+ENV PICTURES_MAX_SIZE=10MB
+ENV JWT_SIGN_KEY=NuwhbujHwsvJpwq2peJGkw23ejTmhqoqh2tydkei9izheoo9
+ENV JWT_EXPIRE_PERIOD=1209600000
+ENV MYSQL_URL=jdbc:mysql://172.17.0.1:3306/jade?useUnicode=true&characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+ENV MYSQL_USERNAME=jade
+ENV MYSQL_PASSWORD=123456
+
 # 从编译好的镜像中将jar拷贝到运行时容器，并重命名为app.jar
 COPY --from=builder /project/app.jar /app.jar
 

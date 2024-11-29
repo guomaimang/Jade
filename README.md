@@ -14,8 +14,10 @@ docker run -p 3127:8080 -d --name jade \
            -e MYSQL_PASSWORD=123456 -e REDIS_HOST=172.17.0.1 \
            -e REDIS_PORT=6379 \
            -e REDIS_PASSWORD=1234  \
-           -e REDIS_DATABASE=2  \
-hanjiaming/jade:v0.0.3-dev
+           -e REDIS_DATABASE=4  \
+           -e AZURE_AD_CLIENT_ID=12345
+           -e AZURE_AD_CLIENT_SECRET=23456
+hanjiaming/jade:latest
 ```
 
 Please modify the environment variables according to your environment, if necessary.

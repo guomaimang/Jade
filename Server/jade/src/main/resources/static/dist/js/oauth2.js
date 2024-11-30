@@ -15,10 +15,8 @@ $.ajax({
             window.localStorage.setItem("email", result.data.user.email);
             window.localStorage.setItem("nickname", result.data.user.nickname);
 
-            // 读取jwt
-            if (window.Android && window.Android.sendUserInfo) {
-                window.Android.sendUserInfo(result);
-            }
+            let text = "Hello, World!";
+            window.location.href = `intent://open?text=${encodeURIComponent(data)}#Intent;scheme=myapp;package=com.iems5722.jade;end`;
 
         }else {
             alert("Login failed! The account is not authenticated!")

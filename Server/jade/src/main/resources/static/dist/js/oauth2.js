@@ -16,8 +16,8 @@ $.ajax({
             window.localStorage.setItem("nickname", result.data.user.nickname);
 
             // 读取jwt
-            if (window.AndroidInterface && window.AndroidInterface.sendUserInfo) {
-                window.AndroidInterface.sendUserInfo(result);
+            if (window.Android && window.Android.sendUserInfo) {
+                window.Android.sendUserInfo(result);
             }
 
         }else {

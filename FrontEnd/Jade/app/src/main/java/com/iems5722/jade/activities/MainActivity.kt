@@ -1,6 +1,7 @@
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -72,10 +73,12 @@ class MainActivity : ComponentActivity() {
         val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
         val nickname = "nickname"
 
+        val context = LocalContext.current
+
         var text1 by remember { mutableStateOf(TextFieldValue()) }
         var text2 by remember { mutableStateOf(TextFieldValue()) }
 
-        var openSSOWebView by remember { mutableStateOf(false) }
+        val openSSOWebView by remember { mutableStateOf(false) }
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -134,6 +137,8 @@ class MainActivity : ComponentActivity() {
                 Button(
                     onClick = {
 //                    openSSOWebView = true
+                        val intent = Intent(context, Topic::class.java)
+                        context.startActivity(intent)
 
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)

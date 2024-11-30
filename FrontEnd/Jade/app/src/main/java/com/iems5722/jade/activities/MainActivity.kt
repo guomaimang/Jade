@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +58,17 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val intent = intent
+        if (Intent.ACTION_VIEW == intent.action) {
+            val data = intent.data
+            if (data != null && "myapp" == data.scheme) {
+                val text = data.getQueryParameter("text")
+                // Android 显示
+                Log.i("MainActivity", text.toString())
+            }
+        }
+
         enableEdgeToEdge()
         setContent {
             JadeTheme {
@@ -191,7 +201,7 @@ class MainActivity : ComponentActivity() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(0.dp,16.dp),
+                    .padding(0.dp, 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 val webView = remember { WebView(context) }
@@ -245,7 +255,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .offset(y = (-48).dp)
-                        .background(color = colorResource(R.color.microsoftBlue), shape = RoundedCornerShape(50))
+                        .background(
+                            color = colorResource(R.color.microsoftBlue),
+                            shape = RoundedCornerShape(50)
+                        )
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.close),

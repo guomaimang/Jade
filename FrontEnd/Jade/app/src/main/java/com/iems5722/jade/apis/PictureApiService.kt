@@ -1,5 +1,6 @@
 package com.iems5722.jade.apis
 
+import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Picture
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -19,7 +20,7 @@ interface PictureApiService {
         @Query("topicId") topicId: Int,
         @Query("pageNum") pageNum: Int = 1,
         @Query("pageSize") pageSize: Int = 20
-    ): Call<Result<List<Picture>>>
+    ): Call<ResultWrapper<List<Picture>>>
 
     @Multipart
     @POST("/picture/upload")
@@ -27,10 +28,10 @@ interface PictureApiService {
         @Header("jwt") jwt: String,
         @Part file: MultipartBody.Part,
         @Part("picture") picture: String
-    ): Call<Picture>
+    ): Call<ResultWrapper<Picture>>
 
     @DELETE("/picture/delete")
-    fun deletePicture(@Query("pictureId") pictureId: Int): Call<Result<Int>>
+    fun deletePicture(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Int>>
 
     @GET("/picture/get_file")
     fun getPictureFile(
@@ -40,5 +41,5 @@ interface PictureApiService {
     ): Call<ResponseBody>
 
     @GET("/picture/info")
-    fun getPictureInfo(@Query("pictureId") pictureId: Int): Call<Picture>
+    fun getPictureInfo(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Picture>>
 }

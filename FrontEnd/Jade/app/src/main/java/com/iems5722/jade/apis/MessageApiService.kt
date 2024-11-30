@@ -1,5 +1,6 @@
 package com.iems5722.jade.apis
 
+import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Message
 import retrofit2.Call
 import retrofit2.http.Body
@@ -13,8 +14,8 @@ interface MessageApiService {
     fun getMessagesByTopicId(
         @Query("topicId") topicId: Int,
         @Query("startTime") startTime: Long? = null
-    ): Call<Result<List<Message>>>
+    ): Call<ResultWrapper<List<Message>>>
 
     @POST("/message/post")
-    fun postMessage(@Body message: Message): Call<Result<Void>>
+    fun postMessage(@Body message: Message): Call<ResultWrapper<Void>>
 }

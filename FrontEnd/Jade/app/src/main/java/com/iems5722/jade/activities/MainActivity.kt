@@ -212,12 +212,25 @@ class MainActivity : ComponentActivity() {
                 }
 
                 webView.webViewClient = object : WebViewClient() {
-                    @Deprecated("Deprecated in Java")
-                    override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-                        // 如果 URL 重定向，继续加载新页面
-                        view.loadUrl(url)
-                        return true
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        // 执行 JavaScript 代码
+                        view?.evaluateJavascript(
+                            """
+                        var style = document.createElement('style');
+                        style.innerHTML = `
+                            html, body {
+                                height: auto !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        """.trimIndent()
+                        ) { result ->
+                            Log.d("WebView", "JavaScript executed: $result")
+                        }
                     }
+
                 }
 
                 AndroidView(

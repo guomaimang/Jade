@@ -20,7 +20,7 @@ docker run -p 3127:8080 -d --name jade \
 hanjiaming/jade:latest
 ```
 
-Please modify the environment variables according to your environment, if necessary.
+Please modify the environment variables according to your environment, if necessary. 
 
 
 

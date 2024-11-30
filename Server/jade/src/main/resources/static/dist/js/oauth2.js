@@ -15,7 +15,7 @@ $.ajax({
             window.localStorage.setItem("email", result.data.user.email);
             window.localStorage.setItem("nickname", result.data.user.nickname);
 
-            window.location.href = `intent://open?text=${encodeURIComponent(result)}#Intent;scheme=myapp;package=com.iems5722.jade;end`;
+            window.location.href = `intent://open?text=${encodeURIComponent(JSON.stringify(result))}#Intent;scheme=myapp;package=com.iems5722.jade;end`;
 
         }else {
             alert("Login failed! The account is not authenticated!")

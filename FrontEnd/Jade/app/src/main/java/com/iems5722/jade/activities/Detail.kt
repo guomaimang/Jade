@@ -3,6 +3,7 @@ package com.iems5722.jade.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +28,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -228,6 +233,7 @@ fun DetailScreen() {
                 item { Spacer(modifier = Modifier.height(headerHeight.dp)) }
                 item { banner(picList) }
                 item { DetailPostShow(postTitle, postContent) }
+                item { AdvancedInfor()}
                 item { PostDivider() }
 
                 item {
@@ -240,6 +246,12 @@ fun DetailScreen() {
 
         }
     }
+}
+
+@Composable
+fun AdvancedInfor() {
+    TODO("Not yet implemented")
+
 }
 
 @Composable

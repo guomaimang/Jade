@@ -3,5 +3,7 @@
     <string name="SettingString">Settings</string>
     <string name="SettingTitle">My Post</string>
     <string name="AlbumString">Album on Map</string>
+    <string name="AdvanceInformation">Advance Information</string>
+    <string name="HideInformation">Click to hide</string>
     <string name="CommitArea">Sharing Space</string>
 </resources>

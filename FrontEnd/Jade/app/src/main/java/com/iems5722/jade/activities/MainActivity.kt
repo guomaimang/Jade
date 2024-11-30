@@ -1,7 +1,12 @@
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
@@ -62,61 +67,86 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // 在应用启动时启用 WebView 调试
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
     }
-}
 
-@Composable
-fun Login() {
-    // TODO: User image, logic, appearance
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-    val nickname = "nickname"
+    // JavascriptInterface 类，用来接收 token
+    private inner class WebAppInterface {
+        @android.webkit.JavascriptInterface
+        fun sendUserInfo(jsonData: String) {
+            // 使用 Gson 解析 JSON 数据
+//            val userInfo = Gson().fromJson(jsonData, UserInfo::class.java)
 
-    var text1 by remember { mutableStateOf(TextFieldValue()) }
+            // 处理解析后的数据
+//            Toast.makeText(
+//                this@MainActivity,
+//                "User ID: ${userInfo.userId}, Token: ${userInfo.token}, Name: ${userInfo.name}",
+//                Toast.LENGTH_SHORT
+//            ).show()
+            Log.i("webview", jsonData)
+        }
+    }
+
+    data class UserInfo(val userId: String, val token: String, val name: String)
+
+    @Composable
+    fun Login() {
+        // TODO: User image, logic, appearance
+        val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
+        val nickname = "nickname"
+
+        var text1 by remember { mutableStateOf(TextFieldValue()) }
 //    var text2 by remember { mutableStateOf(TextFieldValue()) }
 
-    var openSSOWebView by remember { mutableStateOf(false) }
+        var openSSOWebView by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+        val context = LocalContext.current
+
+        Box(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+            contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(avatar)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.placeholder),
-                contentDescription = "user_img",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(128.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(avatar)
+                        .crossfade(true)
+                        .build(),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    contentDescription = "user_img",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(128.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = nickname,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(
-                value = text1,
-                onValueChange = { newText -> text1 = newText },
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                shape = MaterialTheme.shapes.extraLarge,
-                label = { Text("Enter your email") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = nickname,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = text1,
+                    onValueChange = { newText -> text1 = newText },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    label = { Text("Enter your email") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 //            TextField(
 //                value = text2,
 //                onValueChange = { newText -> text2 = newText },
@@ -129,67 +159,94 @@ fun Login() {
 //                shape = MaterialTheme.shapes.extraLarge,
 //                label = { Text("Enter your password") }
 //            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    openSSOWebView = !openSSOWebView
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(text = "Login/Register")
-            }
-            Spacer(modifier = Modifier.height(48.dp))
-        }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+//                    openSSOWebView = !openSSOWebView
 
-        // 在这里显示 WebView
-        if (openSSOWebView) {
-            openSSOWebView = SSOWebView(openSSOWebView)
+                        val intent = Intent(context, Topic::class.java)
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = "Login/Register")
+                }
+                Spacer(modifier = Modifier.height(48.dp))
+            }
+
+
+            if (openSSOWebView) {
+                openSSOWebView = SSOWebView(openSSOWebView)
+            }
         }
     }
-}
 
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-fun SSOWebView(openSSOWebView: Boolean) : Boolean{
-    val context = LocalContext.current
+    @SuppressLint("SetJavaScriptEnabled")
+    @Composable
+    fun SSOWebView(openSSOWebView: Boolean) : Boolean{
+        val context = LocalContext.current
 
-    var show by remember { mutableStateOf(openSSOWebView) }
-    if (show) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(0.dp,16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            val webView = remember { WebView(context) }
-            webView.webViewClient = WebViewClient()
-            webView.settings.javaScriptEnabled = true
-            webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
-
-            AndroidView(
-                factory = { webView },
-                modifier = Modifier.fillMaxSize()
-            )
-
-            IconButton(
-                onClick = {
-                    show = !show
-                },
+        var show by remember { mutableStateOf(openSSOWebView) }
+        if (show) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = (-48).dp)
-                    .background(color = colorResource(R.color.microsoftBlue), shape = RoundedCornerShape(50))
+                    .fillMaxSize()
+                    .padding(0.dp,16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.close),
-                    contentDescription = "Close the button",
-                    tint = Color.White
-                )
-            }
+                val webView = remember { WebView(context) }
+                webView.webViewClient = WebViewClient()
+                val webSettings = webView.settings
+                webSettings.javaScriptEnabled = true
+                webSettings.allowFileAccess = true
+                webSettings.allowContentAccess = true
+                webSettings.domStorageEnabled = true
+                webView.addJavascriptInterface(WebAppInterface(), "Android")
+                webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
 
+                webView.webChromeClient = object : WebChromeClient() {
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                        Log.d("WebViewConsole", consoleMessage?.message() ?: "")
+                        return super.onConsoleMessage(consoleMessage)
+                    }
+                }
+
+                webView.webViewClient = object : WebViewClient() {
+                    @Deprecated("Deprecated in Java")
+                    override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+                        // 如果 URL 重定向，继续加载新页面
+                        view.loadUrl(url)
+                        return true
+                    }
+                }
+
+                AndroidView(
+                    factory = { webView },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                IconButton(
+                    onClick = {
+                        show = !show
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .offset(y = (-48).dp)
+                        .background(color = colorResource(R.color.microsoftBlue), shape = RoundedCornerShape(50))
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.close),
+                        contentDescription = "Close the button",
+                        tint = Color.White
+                    )
+                }
+
+            }
+        }else{
+            return show
         }
-    }else{
         return show
     }
-    return show
 }
+
+

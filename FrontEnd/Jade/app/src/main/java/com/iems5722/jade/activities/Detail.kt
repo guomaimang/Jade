@@ -3,15 +3,11 @@ package com.iems5722.jade.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,9 +24,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -96,6 +90,8 @@ fun DetailScreen() {
 
     val postTitle = "Test"
     val postContent = "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest"
+
+    // TODO: Get extra information
 
     // TODO: This is the post's not current user's
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
@@ -233,7 +229,7 @@ fun DetailScreen() {
                 item { Spacer(modifier = Modifier.height(headerHeight.dp)) }
                 item { banner(picList) }
                 item { DetailPostShow(postTitle, postContent) }
-                item { AdvancedInfor()}
+                item { AdvancedInfo() }
                 item { PostDivider() }
 
                 item {
@@ -249,9 +245,28 @@ fun DetailScreen() {
 }
 
 @Composable
-fun AdvancedInfor() {
-    TODO("Not yet implemented")
+fun AdvancedInfo() {
+    var needToShow by remember { mutableStateOf(false) }
+    Text(
+        text = stringResource(R.string.AdvanceInformation),
+        style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        modifier = Modifier.clickable {
+            needToShow = true
+        }
+    )
 
+    if (needToShow) {
+        Text("1234")
+        Text(
+            text = stringResource(R.string.HideInformation),
+            style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 16.sp),
+            modifier = Modifier.clickable {
+                needToShow = false
+            }
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable

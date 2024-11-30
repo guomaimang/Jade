@@ -1,8 +1,9 @@
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,8 +34,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -52,32 +52,28 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     Login()
                 }
-
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(modifier: Modifier = Modifier) {
+fun Login() {
     // TODO: User image, logic, appearance
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
     val nickname = "nickname"
 
-    var context = LocalContext.current
     var text1 by remember { mutableStateOf(TextFieldValue()) }
     var text2 by remember { mutableStateOf(TextFieldValue()) }
 
+    var openSSOWebView by remember { mutableStateOf(false) }
+
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-        // TODO: background needed?
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
             AsyncImage(
@@ -97,17 +93,13 @@ fun Login(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = nickname,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = text1,
-                onValueChange = { newText ->
-                    text1 = newText
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
+                onValueChange = { newText -> text1 = newText },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
@@ -119,44 +111,60 @@ fun Login(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = text2,
-                onValueChange = { newText ->
-                    text2 = newText
-                },
+                onValueChange = { newText -> text2 = newText },
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
                 ),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
                 shape = MaterialTheme.shapes.extraLarge,
                 label = { Text("Enter your password") }
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    // TODO: Update to Server
+//                    openSSOWebView = true
 
-                    // TODO: What to deliver?
-                    // TODO: webview
-//                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.baidu.com"))
-                    val intent = Intent(context, Topic::class.java)
-                    context.startActivity(intent)
                 },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = "Login/Register")
             }
             Spacer(modifier = Modifier.height(48.dp))
         }
+
+        // 在这里显示 WebView
+        if (openSSOWebView) {
+            SSOWebView()
+        }
     }
 }
 
-@Preview(showBackground = true)
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun GreetingPreview() {
-    JadeTheme {
-        Login()
+fun SSOWebView() {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        val webView = remember { WebView(context) }
+        webView.webViewClient = WebViewClient()
+        webView.settings.javaScriptEnabled = true
+        webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
+
+        AndroidView(
+            factory = { webView },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Button(
+            onClick = { /* 关闭WebView，可能需要修改状态来控制WebView的显示与隐藏 */ },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Text("Close WebView")
+        }
     }
 }

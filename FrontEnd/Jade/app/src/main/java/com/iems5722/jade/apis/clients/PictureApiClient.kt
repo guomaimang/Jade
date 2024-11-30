@@ -10,7 +10,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class PictureApiClient(private val jwt: String) {
+class PictureApiClient {
 
     private val pictureApiService = RetrofitInstance.pictureApiService
 
@@ -79,7 +79,7 @@ class PictureApiClient(private val jwt: String) {
         pictureJson: String,
         callback: (ResultWrapper<Picture>) -> Unit
     ) {
-        pictureApiService.uploadPicture(jwt, file, pictureJson)
+        pictureApiService.uploadPicture(file, pictureJson)
             .enqueue(object : Callback<ResultWrapper<Picture>> {
                 override fun onResponse(
                     call: Call<ResultWrapper<Picture>>,

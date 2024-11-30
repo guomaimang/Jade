@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -106,15 +105,8 @@ fun TopicScreen() {
 
     val context = LocalContext.current
     val imageUploadHelper = ImageUploadHelper()
-
-    val photoPickerLauncher = imageUploadHelper.setupMediaPickerWithUpload(
+    val photoPickerLauncher = imageUploadHelper.setupMediaPicker(
         context = context,
-        onSuccess = {
-            Toast.makeText(context, "上传成功并跳转完成", Toast.LENGTH_SHORT).show()
-        },
-        onError = { error ->
-            Toast.makeText(context, "发生错误: $error", Toast.LENGTH_SHORT).show()
-        }
     )
 
     var postList by remember { mutableStateOf(listOf<Post>()) }
@@ -138,7 +130,6 @@ fun TopicScreen() {
     // TODO: Get user name and user image
     val nickname = "Nickname"
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-
 
 
     var bgHeight = ContentScale.FillHeight
@@ -443,7 +434,7 @@ fun PostItemShow(postItem: Post) {
 
 // TODO: if time is lick timestamp or something, transfer
 fun timeToShow(time: String): String {
-    val timeReturn:String
+    val timeReturn: String
 
     // TODO: let time to be like Today 11:00 or 2 hours ago or yesterday xxx or 1 01-01 or something
     timeReturn = time

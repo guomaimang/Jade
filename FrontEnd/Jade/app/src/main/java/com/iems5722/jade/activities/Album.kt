@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -43,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
-import com.iems5722.jade.utils.ImageUploadHelper
 
 class Album : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
@@ -68,17 +66,6 @@ class Album : ComponentActivity() {
 fun AlbumScreen() {
     // TODO:
     var context = LocalContext.current
-    val imageUploadHelper = ImageUploadHelper()
-
-    val photoPickerLauncher = imageUploadHelper.setupMediaPickerWithUpload(
-        context = context,
-        onSuccess = {
-            Toast.makeText(context, "上传成功并跳转完成", Toast.LENGTH_SHORT).show()
-        },
-        onError = { error ->
-            Toast.makeText(context, "发生错误: $error", Toast.LENGTH_SHORT).show()
-        }
-    )
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }

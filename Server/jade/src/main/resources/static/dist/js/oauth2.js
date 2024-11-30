@@ -13,8 +13,13 @@ $.ajax({
         if (result.code === 0) {
             window.localStorage.setItem("jwt", result.data.jwt);
             window.localStorage.setItem("email", result.data.user.email);
-            window.localStorage.setItem("nickname", result.data.user.name);
-            window.location.href = "/";
+            window.localStorage.setItem("nickname", result.data.user.nickname);
+
+            // 读取jwt
+            if (window.AndroidInterface && window.AndroidInterface.sendUserInfo) {
+                window.AndroidInterface.sendUserInfo(result);
+            }
+
         }else {
             alert("Login failed! The account is not authenticated!")
             window.location.href = "/login.html";

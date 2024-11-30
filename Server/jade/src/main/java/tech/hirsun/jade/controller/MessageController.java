@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import tech.hirsun.jade.pojo.Message;
 import tech.hirsun.jade.result.Result;
 import tech.hirsun.jade.service.MessageService;
+import tech.hirsun.jade.utils.JwtUtils;
 
 import java.util.Date;
 
@@ -41,8 +42,10 @@ public class MessageController {
      * @param message: message object
      */
     @PostMapping("/post")
-    private Result postMessage(@RequestBody Message message) {
+    private Result postMessage(@RequestHeader String jwt,
+                               @RequestBody Message message) {
         log.info("Request post message: {}", message);
+        message.setUserId(Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString()));
         messageService.postMessage(message);
         return Result.success();
     }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -55,116 +56,128 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun Login() {
-    // TODO: User image, logic, appearance
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-    val nickname = "nickname"
+    // JavascriptInterface 类，用来接收 token
+    private inner class WebAppInterface {
+        @android.webkit.JavascriptInterface
+        fun sendToken(token: String) {
+            // 在这里可以处理 token，进行存储、显示等操作
+            Toast.makeText(this@MainActivity, "Received token: $token", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    var text1 by remember { mutableStateOf(TextFieldValue()) }
-    var text2 by remember { mutableStateOf(TextFieldValue()) }
+    @Composable
+    fun Login() {
+        // TODO: User image, logic, appearance
+        val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
+        val nickname = "nickname"
 
-    var openSSOWebView by remember { mutableStateOf(false) }
+        var text1 by remember { mutableStateOf(TextFieldValue()) }
+        var text2 by remember { mutableStateOf(TextFieldValue()) }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+        var openSSOWebView by remember { mutableStateOf(false) }
+
+        Box(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+            contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(avatar)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.placeholder),
-                contentDescription = "user_img",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(128.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(avatar)
+                        .crossfade(true)
+                        .build(),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    contentDescription = "user_img",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(128.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = nickname,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(
-                value = text1,
-                onValueChange = { newText -> text1 = newText },
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                shape = MaterialTheme.shapes.extraLarge,
-                label = { Text("Enter your uid") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(
-                value = text2,
-                onValueChange = { newText -> text2 = newText },
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                shape = MaterialTheme.shapes.extraLarge,
-                label = { Text("Enter your password") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = nickname,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = text1,
+                    onValueChange = { newText -> text1 = newText },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    label = { Text("Enter your uid") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = text2,
+                    onValueChange = { newText -> text2 = newText },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    label = { Text("Enter your password") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
 //                    openSSOWebView = true
 
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(text = "Login/Register")
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = "Login/Register")
+                }
+                Spacer(modifier = Modifier.height(48.dp))
             }
-            Spacer(modifier = Modifier.height(48.dp))
-        }
 
-        // 在这里显示 WebView
-        if (openSSOWebView) {
-            SSOWebView()
+            // 在这里显示 WebView
+            if (openSSOWebView) {
+                SSOWebView()
+            }
         }
     }
-}
 
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-fun SSOWebView() {
-    val context = LocalContext.current
+    @SuppressLint("SetJavaScriptEnabled")
+    @Composable
+    fun SSOWebView() {
+        val context = LocalContext.current
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        val webView = remember { WebView(context) }
-        webView.webViewClient = WebViewClient()
-        webView.settings.javaScriptEnabled = true
-        webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
-
-        AndroidView(
-            factory = { webView },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Button(
-            onClick = { /* 关闭WebView，可能需要修改状态来控制WebView的显示与隐藏 */ },
-            modifier = Modifier.align(Alignment.BottomCenter)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Text("Close WebView")
+            val webView = remember { WebView(context) }
+            webView.webViewClient = WebViewClient()
+            webView.settings.javaScriptEnabled = true
+            webView.addJavascriptInterface(WebAppInterface(), "Android")
+            webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
+
+            AndroidView(
+                factory = { webView },
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Button(
+                onClick = {
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                Text("Close WebView")
+            }
         }
     }
 }
+

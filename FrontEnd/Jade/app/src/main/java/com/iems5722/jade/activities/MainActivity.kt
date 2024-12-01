@@ -2,6 +2,8 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Rect
+import android.graphics.Shader
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +27,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,14 +37,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -134,14 +139,34 @@ class MainActivity : ComponentActivity() {
 //        var text1 by remember { mutableStateOf(TextFieldValue()) }
 //        var text2 by remember { mutableStateOf(TextFieldValue()) }
 
+//        val colorStops = arrayOf(
+//            0.0f to Color(0xFFF3F2F7),
+//            0.1f to Color(0xFFE7F0F7),
+//            0.2f to Color(0xFFC8E5FC),
+//            0.7f to Color(0xFFCDE1FB),
+//            0.75f to Color(0xFFDDE5FA),
+//            0.8f to Color(0xFFECEFF6),
+//            0.9f to Color(0xFFF3F2F7),
+//            1f to Color(0xFFF3F2F7),
+//        )
+
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+//                .background(Brush.linearGradient(colorStops = colorStops))
+                ,
             contentAlignment = Alignment.Center
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center
             ) {
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+                    AppNameText(stringResource(R.string.app_name), textSize = 56)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(avatar)
@@ -235,4 +260,63 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+fun px2dp(scale: Float, px: Int): Int {
+//    val scale = resources.displayMetrics.density
+    return (px / scale + 0.5f).toInt()
+}
+
+@Composable
+fun AppNameText(
+    text: String,
+    textSize: Int = 24,
+    gradientShader: (Rect) -> Shader = {
+        LinearGradientShader(
+            from = Offset(0f, 0f),
+            to = Offset((it.right - it.left).toFloat(), 0f),
+            colors = listOf(
+                Color(0xFF7DE0FC),
+                Color(0xFF77C6F9),
+                Color(0xFFA1B1FF),
+                Color(0xFFD9ACFE),
+            )
+        )
+    }
+) {
+    val density = LocalDensity.current.density
+    var width by remember { mutableStateOf(0.dp) }
+    var height by remember { mutableStateOf(0.dp) }
+
+    Canvas(
+        modifier = Modifier
+            .padding(height / 5)
+            .width(width)
+            .height(height)
+    ) {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().asFrameworkPaint().apply {
+                this.isAntiAlias = true
+                this.style = android.graphics.Paint.Style.FILL
+                this.isFakeBoldText = true
+                this.textSize = textSize * density
+            }
+            val rect = Rect()
+            paint.getTextBounds(text, 0, text.length, rect)
+
+            width = px2dp(density, rect.right - rect.left).dp
+            height = px2dp(density, rect.bottom - rect.top).dp
+
+            paint.shader = gradientShader.invoke(rect)
+
+            val fontMetrics = paint.fontMetrics
+            val distance = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom
+            canvas.nativeCanvas.drawText(
+                text,
+                0f,
+                size.height / 2 + distance,
+                paint
+            )
+        }
+    }
+}
 

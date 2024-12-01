@@ -54,7 +54,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
-    val paging_version = "3.3.4"
+//    val paging_version = "3.3.4"
 
     implementation(libs.androidx.paging.runtime)
 
@@ -63,7 +63,7 @@ dependencies {
     implementation(libs.androidx.paging.compose)
 
     //navigator
-    val nav_version = "2.8.3"
+//    val nav_version = "2.8.3"
     // Jetpack Compose integration
     implementation(libs.androidx.navigation.compose)
     // Views/Fragments integration
@@ -74,14 +74,17 @@ dependencies {
     // Testing Navigation
     androidTestImplementation(libs.androidx.navigation.testing)
 
-    //coil
+    // coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
     // Realm
-    implementation("io.realm:realm-android-library:10.11.0")
+    implementation(libs.realm.android.library)
+
+    // fonts
+    implementation(libs.androidx.ui.text.google.fonts)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

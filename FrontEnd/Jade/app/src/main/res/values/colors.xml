@@ -8,4 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="microsoftBlue">#FF0167B8</color>
+    <color name="AppName1">#FF7DE0FC</color>
+    <color name="AppName2">#FF77C6F9</color>
+    <color name="AppName3">#A1B1FF</color>
+    <color name="AppName4">#FFD9ACFE</color>
 </resources>

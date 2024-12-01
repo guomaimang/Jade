@@ -52,6 +52,8 @@ android {
 dependencies {
 
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.ktx)
     val paging_version = "3.3.4"
 
     implementation(libs.androidx.paging.runtime)
@@ -77,6 +79,9 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+
+    // Realm
+    implementation("io.realm:realm-android-library:10.11.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

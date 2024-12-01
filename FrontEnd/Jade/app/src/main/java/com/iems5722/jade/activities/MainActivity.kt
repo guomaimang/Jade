@@ -42,7 +42,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
-import com.iems5722.jade.utils.JwtUtils
+import com.iems5722.jade.utils.UserPrefs
 import org.json.JSONObject
 
 @Suppress("NAME_SHADOWING")
@@ -68,13 +68,16 @@ class MainActivity : ComponentActivity() {
                             // 登录成功，获取 JWT 和用户信息
                             val jwt = jsonResponse.getJSONObject("data").getString("jwt")
                             val user = jsonResponse.getJSONObject("data").getJSONObject("user")
+                            val userId = user.getString("id")
                             val nickname = user.getString("nickname")
                             val email = user.getString("email")
 
+                            // 存储用户数据
+                            UserPrefs.saveUserData(this, userId, email, nickname, jwt)
+
                             // 提示用户登录成功
                             Toast.makeText(this, "登录成功: $nickname", Toast.LENGTH_SHORT).show()
-                            // 存储 JWT 令牌
-                            JwtUtils.storeJwtToken(this, jwt)
+
                             // 跳转到APP主界面
                             val intent = Intent(this, Topic::class.java)
                             this.startActivity(intent)
@@ -111,8 +114,6 @@ class MainActivity : ComponentActivity() {
 
         var text1 by remember { mutableStateOf(TextFieldValue()) }
 //    var text2 by remember { mutableStateOf(TextFieldValue()) }
-
-        val context = LocalContext.current
 
         Box(
             modifier = Modifier.fillMaxSize(),

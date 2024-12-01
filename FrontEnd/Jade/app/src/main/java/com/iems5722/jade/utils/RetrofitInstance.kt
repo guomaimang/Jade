@@ -13,7 +13,7 @@ object RetrofitInstance {
 
     // 创建 OkHttpClient，延迟获取JWT并添加JWT拦截器
     private fun getOkHttpClient(context: Context): OkHttpClient {
-        val jwt = JwtUtils.getJwtToken(context)
+        val jwt = UserPrefs.getJwt(context)
         return OkHttpClient.Builder()
             .addInterceptor(JwtInterceptor(jwt.toString()))
             .build()

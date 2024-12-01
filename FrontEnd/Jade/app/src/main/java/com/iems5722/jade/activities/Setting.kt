@@ -51,7 +51,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
-import com.iems5722.jade.utils.JwtUtils
+import com.iems5722.jade.utils.UserPrefs
 
 class Setting : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,10 +71,13 @@ class Setting : ComponentActivity() {
 @Composable
 @Preview
 fun SettingScreen(modifier: Modifier = Modifier) {
+
+    val context = LocalContext.current
+
     // TODO: Get User's information
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val nickname = "nickname"
-    val mail = "name@subdomin.domain"
+    val nickname = UserPrefs.getNickname(context)
+    val mail = UserPrefs.getEmail(context)
 
     // TODO: Get my post
     val testImage0 = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
@@ -91,9 +94,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
         Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
         Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
     )
-
-
-    val context = LocalContext.current
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -239,23 +239,27 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = nickname,
-                            style = TextStyle(fontSize = 20.sp)
-                        )
+                        if (nickname != null) {
+                            Text(
+                                text = nickname,
+                                style = TextStyle(fontSize = 20.sp)
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = mail,
-                            style = TextStyle(fontSize = 16.sp)
-                        )
+                        if (mail != null) {
+                            Text(
+                                text = mail,
+                                style = TextStyle(fontSize = 16.sp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.weight(1f))
 
                     IconButton(
                         // TODO: Brings what?
                         onClick = {
-                            // 用户退出的时候清除本地存的JWTToken
-                            JwtUtils.clearJwtToken(context)
+                            // 用户退出的时候清除本地用户数据
+                            UserPrefs.clearUserData(context)
                             val intent = Intent(context, MainActivity::class.java)
                             context.startActivity(intent)
                         },

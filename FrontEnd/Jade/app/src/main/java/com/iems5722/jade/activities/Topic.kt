@@ -56,6 +56,7 @@ import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.ImageUploadHelper
+import com.iems5722.jade.utils.UserPrefs
 
 class Topic : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
@@ -128,7 +129,7 @@ fun TopicScreen() {
     )
 
     // TODO: Get user name and user image
-    val nickname = "Nickname"
+    val nickname = UserPrefs.getNickname(context)
     val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
 
 
@@ -194,11 +195,13 @@ fun TopicScreen() {
                     )
                     Spacer(modifier = Modifier.width(16.dp))
 //                    Text(text = stringResource(R.string.app_name))
-                    Text(
-                        text = nickname,
-                        style = TextStyle(fontSize = 24.sp),
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    if (nickname != null) {
+                        Text(
+                            text = nickname,
+                            style = TextStyle(fontSize = 24.sp),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(

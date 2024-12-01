@@ -75,7 +75,7 @@ fun SettingScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     // TODO: Get User's information
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)
     val mail = UserPrefs.getEmail(context)
 

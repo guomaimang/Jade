@@ -2,18 +2,18 @@ package com.iems5722.jade.utils
 
 object ImageLinkGenerator {
 
-    // 定义10个图片链接模板
+    // 定义10个适合用作用户头像的图片链接模板
     private val imageLinks = listOf(
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181327978.png", // 图片 0
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181328123.png", // 图片 1
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181328456.png", // 图片 2
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181328789.png", // 图片 3
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181329012.png", // 图片 4
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181329345.png", // 图片 5
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181329678.png", // 图片 6
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181330012.png", // 图片 7
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181330345.png", // 图片 8
-        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411181330678.png"  // 图片 9
+        "https://www.w3schools.com/w3images/avatar2.png", // 图片 0
+        "https://www.w3schools.com/w3images/avatar3.png", // 图片 1
+        "https://www.w3schools.com/w3images/avatar5.png", // 图片 2
+        "https://www.w3schools.com/w3images/avatar6.png", // 图片 3
+        "https://www.w3schools.com/w3images/avatar4.png", // 图片 4
+        "https://www.w3schools.com/w3images/avatar1.png", // 图片 5
+        "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png", // 图片 6
+        "https://upload.wikimedia.org/wikipedia/commons/4/46/Default-avatar.png", // 图片 7
+        "https://upload.wikimedia.org/wikipedia/commons/a/a5/Placeholder_for_avatar_image.png", // 图片 8
+        "https://upload.wikimedia.org/wikipedia/commons/8/88/Portrait_placeholder.png"  // 图片 9
     )
 
     /**

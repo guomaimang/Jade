@@ -130,7 +130,7 @@ fun TopicScreen() {
 
     // TODO: Get user name and user image
     val nickname = UserPrefs.getNickname(context)
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
+    val avatar = UserPrefs.getAvatar(context)
 
 
     var bgHeight = ContentScale.FillHeight

@@ -2,31 +2,22 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.webkit.ConsoleMessage
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,17 +34,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.JwtUtils
+import org.json.JSONObject
 
+@Suppress("NAME_SHADOWING")
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +58,37 @@ class MainActivity : ComponentActivity() {
                 val text = data.getQueryParameter("text")
                 // Android 显示
                 Log.i("MainActivity", text.toString())
+
+                if (text != null) {
+                    try {
+                        // 解析JSON字符串
+                        val jsonResponse = JSONObject(text)
+                        val code = jsonResponse.getInt("code")
+                        if (code == 0) {
+                            // 登录成功，获取 JWT 和用户信息
+                            val jwt = jsonResponse.getJSONObject("data").getString("jwt")
+                            val user = jsonResponse.getJSONObject("data").getJSONObject("user")
+                            val nickname = user.getString("nickname")
+                            val email = user.getString("email")
+
+                            // 提示用户登录成功
+                            Toast.makeText(this, "登录成功: $nickname", Toast.LENGTH_SHORT).show()
+                            // 存储 JWT 令牌
+                            JwtUtils.storeJwtToken(this, jwt)
+                            // 跳转到APP主界面
+                            val intent = Intent(this, Topic::class.java)
+                            this.startActivity(intent)
+
+                        } else {
+                            // 登录失败，提示错误信息
+                            val message = jsonResponse.getString("message")
+                            Toast.makeText(this, "登录失败: $message", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this, "解析返回数据失败", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
 
@@ -77,31 +100,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        // 在应用启动时启用 WebView 调试
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            WebView.setWebContentsDebuggingEnabled(true)
-        }
     }
 
-    // JavascriptInterface 类，用来接收 token
-    private inner class WebAppInterface {
-        @android.webkit.JavascriptInterface
-        fun sendUserInfo(jsonData: String) {
-            // 使用 Gson 解析 JSON 数据
-//            val userInfo = Gson().fromJson(jsonData, UserInfo::class.java)
-
-            // 处理解析后的数据
-//            Toast.makeText(
-//                this@MainActivity,
-//                "User ID: ${userInfo.userId}, Token: ${userInfo.token}, Name: ${userInfo.name}",
-//                Toast.LENGTH_SHORT
-//            ).show()
-            Log.i("webview", jsonData)
-        }
-    }
-
-    data class UserInfo(val userId: String, val token: String, val name: String)
 
     @Composable
     fun Login() {
@@ -111,8 +111,6 @@ class MainActivity : ComponentActivity() {
 
         var text1 by remember { mutableStateOf(TextFieldValue()) }
 //    var text2 by remember { mutableStateOf(TextFieldValue()) }
-
-        var openSSOWebView by remember { mutableStateOf(false) }
 
         val context = LocalContext.current
 
@@ -172,10 +170,10 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-//                    openSSOWebView = !openSSOWebView
-
-                        val intent = Intent(context, Topic::class.java)
-                        context.startActivity(intent)
+                        val url =
+                            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
@@ -184,94 +182,7 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(48.dp))
             }
 
-
-            if (openSSOWebView) {
-                openSSOWebView = SSOWebView(openSSOWebView)
-            }
         }
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    @Composable
-    fun SSOWebView(openSSOWebView: Boolean) : Boolean{
-        val context = LocalContext.current
-
-        var show by remember { mutableStateOf(openSSOWebView) }
-        if (show) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(0.dp, 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                val webView = remember { WebView(context) }
-                webView.webViewClient = WebViewClient()
-                val webSettings = webView.settings
-                webSettings.javaScriptEnabled = true
-                webSettings.allowFileAccess = true
-                webSettings.allowContentAccess = true
-                webSettings.domStorageEnabled = true
-                webView.addJavascriptInterface(WebAppInterface(), "Android")
-                webView.loadUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345")
-
-                webView.webChromeClient = object : WebChromeClient() {
-                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                        Log.d("WebViewConsole", consoleMessage?.message() ?: "")
-                        return super.onConsoleMessage(consoleMessage)
-                    }
-                }
-
-                webView.webViewClient = object : WebViewClient() {
-
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        // 执行 JavaScript 代码
-                        view?.evaluateJavascript(
-                            """
-                        var style = document.createElement('style');
-                        style.innerHTML = `
-                            html, body {
-                                height: auto !important;
-                            }
-                        `;
-                        document.head.appendChild(style);
-                        """.trimIndent()
-                        ) { result ->
-                            Log.d("WebView", "JavaScript executed: $result")
-                        }
-                    }
-
-                }
-
-                AndroidView(
-                    factory = { webView },
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                IconButton(
-                    onClick = {
-                        show = !show
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .offset(y = (-48).dp)
-                        .background(
-                            color = colorResource(R.color.microsoftBlue),
-                            shape = RoundedCornerShape(50)
-                        )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.close),
-                        contentDescription = "Close the button",
-                        tint = Color.White
-                    )
-                }
-
-            }
-        }else{
-            return show
-        }
-        return show
     }
 }
 

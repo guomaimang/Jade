@@ -51,6 +51,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.JwtUtils
 
 class Setting : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -253,7 +254,8 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     IconButton(
                         // TODO: Brings what?
                         onClick = {
-
+                            // 用户退出的时候清除本地存的JWTToken
+                            JwtUtils.clearJwtToken(context)
                             val intent = Intent(context, MainActivity::class.java)
                             context.startActivity(intent)
                         },

@@ -4,16 +4,16 @@ object ImageLinkGenerator {
 
     // 定义10个适合用作用户头像的图片链接模板
     private val imageLinks = listOf(
-        "https://www.w3schools.com/w3images/avatar2.png", // 图片 0
-        "https://www.w3schools.com/w3images/avatar3.png", // 图片 1
-        "https://www.w3schools.com/w3images/avatar5.png", // 图片 2
-        "https://www.w3schools.com/w3images/avatar6.png", // 图片 3
-        "https://www.w3schools.com/w3images/avatar4.png", // 图片 4
-        "https://www.w3schools.com/w3images/avatar1.png", // 图片 5
-        "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png", // 图片 6
-        "https://upload.wikimedia.org/wikipedia/commons/4/46/Default-avatar.png", // 图片 7
-        "https://upload.wikimedia.org/wikipedia/commons/a/a5/Placeholder_for_avatar_image.png", // 图片 8
-        "https://upload.wikimedia.org/wikipedia/commons/8/88/Portrait_placeholder.png"  // 图片 9
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011935657.png", // 图片 0
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011937539.png", // 图片 1
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011938033.png", // 图片 2
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011939803.png", // 图片 3
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011940329.png", // 图片 4
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011940319.png", // 图片 5
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011940709.png", // 图片 6
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011941921.png", // 图片 7
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011942811.png", // 图片 8
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202412011942788.png"  // 图片 9
     )
 
     /**

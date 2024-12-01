@@ -117,8 +117,8 @@ class MainActivity : ComponentActivity() {
         val avatar = UserPrefs.getAvatar(this)
         val nickname = UserPrefs.getNickname(this)
 
-        var text1 by remember { mutableStateOf(TextFieldValue()) }
-//    var text2 by remember { mutableStateOf(TextFieldValue()) }
+//        var text1 by remember { mutableStateOf(TextFieldValue()) }
+//        var text2 by remember { mutableStateOf(TextFieldValue()) }
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -150,19 +150,19 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    value = text1,
-                    onValueChange = { newText -> text1 = newText },
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    shape = MaterialTheme.shapes.extraLarge,
-                    label = { Text("Enter your email") }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+//                TextField(
+//                    value = text1,
+//                    onValueChange = { newText -> text1 = newText },
+//                    modifier = Modifier.align(Alignment.CenterHorizontally),
+//                    colors = TextFieldDefaults.colors(
+//                        focusedIndicatorColor = Color.Transparent,
+//                        unfocusedIndicatorColor = Color.Transparent,
+//                        disabledIndicatorColor = Color.Transparent
+//                    ),
+//                    shape = MaterialTheme.shapes.extraLarge,
+//                    label = { Text("Enter your email") }
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
 //            TextField(
 //                value = text2,
 //                onValueChange = { newText -> text2 = newText },

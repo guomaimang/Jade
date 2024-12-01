@@ -9,16 +9,23 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -34,7 +41,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -117,6 +127,9 @@ class MainActivity : ComponentActivity() {
         var avatar by remember { mutableStateOf("") }
         avatar = UserPrefs.getAvatar(this).toString()
         val nickname = UserPrefs.getNickname(this)
+        var agreed by remember { mutableStateOf(false) }
+
+        val context = LocalContext.current
 
 //        var text1 by remember { mutableStateOf(TextFieldValue()) }
 //        var text2 by remember { mutableStateOf(TextFieldValue()) }
@@ -179,16 +192,43 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        val url =
-                            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345"
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        startActivity(intent)
+                        if (agreed) {
+                            val url =
+                                "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            startActivity(intent)
+                        }else {
+                            Toast.makeText(context,R.string.NotAgreeTips,Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = "Login/Register")
                 }
+                Row (
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Checkbox(
+                        checked = agreed,
+                        onCheckedChange = { agreed = it },
+                        modifier = Modifier
+                    )
+                    Text(
+                        text =  stringResource(R.string.tips),
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    Text(
+                        text =  stringResource(R.string.file),
+                        style = TextStyle(color = colorResource(R.color.microsoftBlue)),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .clickable {
+                                // TODO: Check User Agreement
+                            }
+                    )
+                }
                 Spacer(modifier = Modifier.height(48.dp))
+
             }
 
         }

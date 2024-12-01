@@ -42,6 +42,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageLinkGenerator
 import com.iems5722.jade.utils.UserPrefs
 import org.json.JSONObject
 
@@ -50,6 +51,8 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        UserPrefs.initializeUserData(this)
 
         val intent = intent
         if (Intent.ACTION_VIEW == intent.action) {
@@ -71,9 +74,12 @@ class MainActivity : ComponentActivity() {
                             val userId = user.getString("id")
                             val nickname = user.getString("nickname")
                             val email = user.getString("email")
+                            val avatar = ImageLinkGenerator.getUserImage(userId.toInt())
 
                             // 存储用户数据
-                            UserPrefs.saveUserData(this, userId, email, nickname, jwt)
+                            UserPrefs.saveUserData(
+                                this, userId, email, nickname, avatar, jwt,
+                            )
 
                             // 提示用户登录成功
                             Toast.makeText(this, "登录成功: $nickname", Toast.LENGTH_SHORT).show()
@@ -108,9 +114,8 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Login() {
-        // TODO: User image, logic, appearance
-        val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-        val nickname = "nickname"
+        val avatar = UserPrefs.getAvatar(this)
+        val nickname = UserPrefs.getNickname(this)
 
         var text1 by remember { mutableStateOf(TextFieldValue()) }
 //    var text2 by remember { mutableStateOf(TextFieldValue()) }
@@ -138,10 +143,12 @@ class MainActivity : ComponentActivity() {
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = nickname,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                if (nickname != null) {
+                    Text(
+                        text = nickname,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = text1,

@@ -258,8 +258,8 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     IconButton(
                         // TODO: Brings what?
                         onClick = {
-                            // 用户退出的时候清除本地用户数据
-                            UserPrefs.clearUserData(context)
+                            // 用户退出的时候重置本地用户数据
+                            UserPrefs.resetJWT(context)
                             val intent = Intent(context, MainActivity::class.java)
                             context.startActivity(intent)
                         },

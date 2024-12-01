@@ -41,8 +41,9 @@ public class UserServiceImpl implements UserService {
         draftUser.setNickname(displayName);
         draftUser.setEmail(email);
         draftUser.setPassword(UUID.randomUUID().toString());
-        userDao.insert(draftUser);
+        Integer uid = userDao.insert(draftUser);
         draftUser.setPassword(null);
+        draftUser.setId(uid);
 
         return draftUser;
     }

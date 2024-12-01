@@ -17,5 +17,5 @@ public interface UserDao {
     public User getUserByEmail(@Param("email")String email);
 
     @Insert("insert into user (nickname, email, password) values (#{nickname}, #{email}, #{password})")
-    public void insert(User user);
+    public Integer insert(User user);
 }

@@ -77,6 +77,7 @@ public class Oauth2Controller {
             claims.put("id", u.getId());
             claims.put("email", u.getEmail());
             String jwt = JwtUtils.createJwt(claims);
+
             Map<String, Object> map = new HashMap<>();
             map.put("jwt", jwt);
             map.put("user", u);

@@ -67,7 +67,7 @@ class PostEdit : ComponentActivity() {
         if (selectedImages.isNullOrEmpty()) {
             // 如果为空，显示错误日志并结束 Activity
             Log.e("PostEditActivity", "No images provided for editing.")
-            finish() // 结束当前 Activity，避免崩溃
+            finish()
             return
         }
 

@@ -1,8 +1,8 @@
 package com.iems5722.jade.apis.clients
 
+import android.content.Context
 import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Picture
-import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.RetrofitInstance.pictureApiService
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -10,9 +10,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class PictureApiClient {
+class PictureApiClient(context: Context) {
 
-    private val pictureApiService = RetrofitInstance.pictureApiService
+    private val pictureApiService = pictureApiService(context)
 
     // Get pictures
     fun getPictures(
@@ -234,58 +234,57 @@ class PictureApiClient {
     }
 }
 
-
 // Get picture info
-fun getPictureInfo(pictureId: Int, callback: (ResultWrapper<Picture>) -> Unit) {
-    pictureApiService.getPictureInfo(pictureId)
-        .enqueue(object : Callback<ResultWrapper<Picture>> {
-            override fun onResponse(
-                call: Call<ResultWrapper<Picture>>,
-                response: Response<ResultWrapper<Picture>>
-            ) {
-                if (response.isSuccessful) {
-                    response.body()?.let {
-                        if (it.code == 0) {  // 如果 code 是 0，表示成功
-                            callback(it)  // 返回 ResultWrapper
-                        } else {
-                            callback(
-                                ResultWrapper(
-                                    500,
-                                    it.message,
-                                    null,
-                                    it.error,
-                                    it.timestamp,
-                                    it.path
-                                )
-                            )
-                        }
-                    }
-                } else {
-                    callback(
-                        ResultWrapper(
-                            500,
-                            "Error: ${response.message()}",
-                            null,
-                            "Network error",
-                            null,
-                            null
-                        )
-                    )
-                }
-            }
-
-            override fun onFailure(call: Call<ResultWrapper<Picture>>, t: Throwable) {
-                callback(
-                    ResultWrapper(
-                        500,
-                        "Error: ${t.localizedMessage}",
-                        null,
-                        t.message,
-                        null,
-                        null
-                    )
-                )
-            }
-        })
-}
+//fun getPictureInfo(pictureId: Int, callback: (ResultWrapper<Picture>) -> Unit) {
+//    pictureApiService.getPictureInfo(pictureId)
+//        .enqueue(object : Callback<ResultWrapper<Picture>> {
+//            override fun onResponse(
+//                call: Call<ResultWrapper<Picture>>,
+//                response: Response<ResultWrapper<Picture>>
+//            ) {
+//                if (response.isSuccessful) {
+//                    response.body()?.let {
+//                        if (it.code == 0) {  // 如果 code 是 0，表示成功
+//                            callback(it)  // 返回 ResultWrapper
+//                        } else {
+//                            callback(
+//                                ResultWrapper(
+//                                    500,
+//                                    it.message,
+//                                    null,
+//                                    it.error,
+//                                    it.timestamp,
+//                                    it.path
+//                                )
+//                            )
+//                        }
+//                    }
+//                } else {
+//                    callback(
+//                        ResultWrapper(
+//                            500,
+//                            "Error: ${response.message()}",
+//                            null,
+//                            "Network error",
+//                            null,
+//                            null
+//                        )
+//                    )
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<ResultWrapper<Picture>>, t: Throwable) {
+//                callback(
+//                    ResultWrapper(
+//                        500,
+//                        "Error: ${t.localizedMessage}",
+//                        null,
+//                        t.message,
+//                        null,
+//                        null
+//                    )
+//                )
+//            }
+//        })
+//}
 

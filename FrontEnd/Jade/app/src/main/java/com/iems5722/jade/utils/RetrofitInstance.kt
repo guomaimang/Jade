@@ -1,5 +1,6 @@
 package com.iems5722.jade.utils
 
+import android.content.Context
 import com.iems5722.jade.apis.PictureApiService
 import com.iems5722.jade.apis.UserLoginApiService
 import okhttp3.OkHttpClient
@@ -10,26 +11,29 @@ object RetrofitInstance {
 
     private const val BASE_URL = "https://jade.dev.hirsun.tech"
 
-    private const val jwt =
-        "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqaWFtaW5nLmhhbkBsaW5rLmN1aGsuZWR1LmhrIiwiZXhwIjoxNzM0MTc1NTk3fQ.tx4dmec6EkMpOdXmiYJ6vsJcrR9CJ5bM9325pS-x1r"
+    // 创建 OkHttpClient，延迟获取JWT并添加JWT拦截器
+    private fun getOkHttpClient(context: Context): OkHttpClient {
+        val jwt = UserPrefs.getJwt(context)
+        return OkHttpClient.Builder()
+            .addInterceptor(JwtInterceptor(jwt.toString()))
+            .build()
+    }
 
-    // 创建 OkHttpClient，添加JWT拦截器
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(JwtInterceptor(jwt))
-        .build()
-
-    private val retrofit: Retrofit by lazy {
-        Retrofit.Builder()
+    // 需要在每次使用时创建 Retrofit 实例
+    private fun getRetrofit(context: Context): Retrofit {
+        return Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(getOkHttpClient(context))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
-    val pictureApiService: PictureApiService by lazy {
-        retrofit.create(PictureApiService::class.java)
+    // 每次请求时通过传入 context 获取 api 服务
+    fun pictureApiService(context: Context): PictureApiService {
+        return getRetrofit(context).create(PictureApiService::class.java)
     }
 
-    val userLoginApiService: UserLoginApiService by lazy {
-        retrofit.create(UserLoginApiService::class.java)
+    fun userLoginApiService(context: Context): UserLoginApiService {
+        return getRetrofit(context).create(UserLoginApiService::class.java)
     }
 }

@@ -114,7 +114,8 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Login() {
-        val avatar = UserPrefs.getAvatar(this)
+        var avatar by remember { mutableStateOf("") }
+        avatar = UserPrefs.getAvatar(this).toString()
         val nickname = UserPrefs.getNickname(this)
 
 //        var text1 by remember { mutableStateOf(TextFieldValue()) }

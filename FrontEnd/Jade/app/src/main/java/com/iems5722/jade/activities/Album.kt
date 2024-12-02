@@ -1,13 +1,17 @@
+@file:Suppress("DEPRECATION")
+
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,27 +20,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -44,8 +40,8 @@ import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 
 class Album : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,38 +60,41 @@ class Album : ComponentActivity() {
 @Composable
 @Preview
 fun AlbumScreen() {
-    // TODO:
+
+    val topicId = 4
+
+    val url = "https://jade.dev.hirsun.tech/map.html?topicId=$topicId"
+
     var context = LocalContext.current
 
-    var bgHeight = ContentScale.FillHeight
-    var headerHeight by remember { mutableIntStateOf(0) }
-    var bottomHeight by remember { mutableIntStateOf(0) }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        // 使用 Custom Tabs 打开 URL
+        val customTabsIntent = CustomTabsIntent.Builder().apply {
+            // 设置自定义的工具栏颜色
+            setToolbarColor(Color(0xFF6200EE).toArgb())  // 例如紫色
+        }.build()
 
+        // 点击时打开 Custom Tab
+        customTabsIntent.launchUrl(context, Uri.parse(url))
+    }
+
+    // 这里可以添加你页面其他内容，比如 header 和底部导航栏
     Box(
         // Background layer
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 48.dp)
     ) {
-        // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
         Box(
             // Header
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
                 .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
-                .onGloballyPositioned { coordinates ->
-                    headerHeight = coordinates.size.height / 2
-                }
                 .zIndex(1f)
         ) {
             Row(
@@ -105,23 +104,20 @@ fun AlbumScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.width(32.dp))
-                Text(text = stringResource(R.string.AlbumString))
+                Text(text = "Album")  // 替换为你实际的标题
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
 
+        // 其他内容
         Box(
             // Bottom
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
-                .onGloballyPositioned { coordinates ->
-                    bottomHeight = coordinates.size.height / 2
-                }
                 .zIndex(1f)
         ) {
-            // TODO: Bottom
             Column {
                 Row(
                     modifier = Modifier
@@ -130,8 +126,8 @@ fun AlbumScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        // TODO: jump to ?
                         onClick = {
+                            // 跳转到 Topic 页面
                             val intent = Intent(context, Topic::class.java)
                             context.startActivity(intent)
                         },
@@ -145,7 +141,6 @@ fun AlbumScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
-                            // TODO: What to deliver?
                             val intent = Intent(context, ChatRooms::class.java)
                             context.startActivity(intent)
                         },
@@ -158,7 +153,6 @@ fun AlbumScreen() {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
-                        // TODO: What to bring?
                         onClick = {
                             val intent = Intent(context, Album::class.java)
                             context.startActivity(intent)
@@ -173,41 +167,6 @@ fun AlbumScreen() {
                 }
             }
         }
-
-        Box(
-            // Lazy Column
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .align(Alignment.TopCenter)
-                .background(Color.Transparent)
-        ) {
-            Column {
-                // Leave place for header
-                Spacer(modifier = Modifier.height(headerHeight.dp))
-
-                // TODO: LazyColumn
-                LazyColumn {
-                    // item ?
-                }
-
-
-                // Usage of Image(From Web)
-//                AsyncImage(
-//                    model = ImageRequest.Builder(LocalContext.current)
-//                        .data(self_fig)
-//                        .crossfade(true)
-//                        .build(),
-//                    placeholder = painterResource(R.drawable.placeholder),
-//                    contentDescription = "user_img",
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .clip(CircleShape)
-//                        .size(48.dp),
-//                )
-//                Text(text = "Topic")
-                // TODO: LazyColumn List
-            }
-        }
     }
 }
+

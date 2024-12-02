@@ -1,10 +1,12 @@
 package com.iems5722.jade.apis
 
+import com.iems5722.jade.model.PageBean
 import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Picture
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
@@ -15,11 +17,11 @@ import retrofit2.http.Query
 interface PictureApiService {
 
     @GET("/picture/list")
-    fun getPictures(
+    suspend fun getPictures(
         @Query("topicId") topicId: Int,
         @Query("pageNum") pageNum: Int = 1,
-        @Query("pageSize") pageSize: Int = 20
-    ): Call<ResultWrapper<List<Picture>>>
+        @Query("pageSize") pageSize: Int = 100
+    ): ResultWrapper<PageBean<Picture>>
 
     @Multipart
     @POST("/picture/upload")
@@ -32,11 +34,11 @@ interface PictureApiService {
     fun deletePicture(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Int>>
 
     @GET("/picture/get_file")
-    fun getPictureFile(
+    suspend fun getPictureFile(
         @Query("file_name") fileName: String,
         @Query("user_id") userId: String,
         @Query("resolution") resolution: String
-    ): Call<ResponseBody>
+    ): Response<ResponseBody>
 
     @GET("/picture/info")
     fun getPictureInfo(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Picture>>

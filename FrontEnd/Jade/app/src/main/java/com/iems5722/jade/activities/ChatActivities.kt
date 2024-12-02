@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -51,6 +50,8 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageLinkGenerator
+import com.iems5722.jade.utils.UserPrefs
 
 class ChatActivities : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
@@ -79,27 +80,57 @@ data class Message(
 
 @Composable
 fun ChatActivitiesScreen() {
+
+    val context = LocalContext.current
     // TODO: Get Chatroom's nickname and avatar
-    val nickname = "Nickname"
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val nickname = UserPrefs.getNickname(context)
+    val avatar = UserPrefs.getUserId(context)?.let { ImageLinkGenerator.getUserImage(it.toInt()) }
 
     // TODO: Get Messages
     val testMessageId = "1"
     val testSenderId = "12345"
-    val testSenderAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
+    val testSenderAvatar =
+        "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
     val testSenderNickname = "TestSender"
     val testMessageString = "Hello"
     val testMessageTime = "Today 13:14"
 
     var messageList by remember { mutableStateOf(listOf<Message>()) }
     messageList = listOf(
-        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
-        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
-        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
-        Message(testMessageId, testSenderId, testSenderAvatar, testSenderNickname, testMessageString, testMessageTime),
+        Message(
+            testMessageId,
+            testSenderId,
+            testSenderAvatar,
+            testSenderNickname,
+            testMessageString,
+            testMessageTime
+        ),
+        Message(
+            testMessageId,
+            testSenderId,
+            testSenderAvatar,
+            testSenderNickname,
+            testMessageString,
+            testMessageTime
+        ),
+        Message(
+            testMessageId,
+            testSenderId,
+            testSenderAvatar,
+            testSenderNickname,
+            testMessageString,
+            testMessageTime
+        ),
+        Message(
+            testMessageId,
+            testSenderId,
+            testSenderAvatar,
+            testSenderNickname,
+            testMessageString,
+            testMessageTime
+        ),
     )
 
-    val context = LocalContext.current
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
@@ -150,7 +181,7 @@ fun ChatActivitiesScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Row{
+                Row {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(avatar)
@@ -166,11 +197,13 @@ fun ChatActivitiesScreen() {
                     )
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Text(
-                        text = nickname,
-                        style = TextStyle(fontSize = 24.sp),
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    if (nickname != null) {
+                        Text(
+                            text = nickname,
+                            style = TextStyle(fontSize = 24.sp),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -209,7 +242,7 @@ fun ChatActivitiesScreen() {
                 .background(Color.Transparent)
         ) {
             LazyColumn {
-                item{
+                item {
                     // Leave place for header
                     Spacer(modifier = Modifier.height(headerHeight.dp))
                 }
@@ -218,7 +251,7 @@ fun ChatActivitiesScreen() {
                     Spacer(modifier = Modifier.height(8.dp))
                     SingleMessageShow(message)
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (index == messageList.size -1) {
+                    if (index == messageList.size - 1) {
                         Spacer(modifier = Modifier.height(bottomHeight.dp))
                     }
                 }

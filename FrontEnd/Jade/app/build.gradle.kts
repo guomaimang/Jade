@@ -58,6 +58,7 @@ dependencies {
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.browser)
 
     // alternatively - without Android dependencies for tests
     testImplementation(libs.androidx.paging.common)

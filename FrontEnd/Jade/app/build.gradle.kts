@@ -57,6 +57,7 @@ dependencies {
 //    val paging_version = "3.3.4"
 
     implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.runtime.livedata)
 
     // alternatively - without Android dependencies for tests
     testImplementation(libs.androidx.paging.common)

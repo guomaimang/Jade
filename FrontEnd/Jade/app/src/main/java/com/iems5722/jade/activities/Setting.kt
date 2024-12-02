@@ -293,11 +293,11 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                         .fillMaxSize()
                         .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
                 ) {
-                    myPostList.forEachIndexed { _, postItem ->
-                        item {
-                            PostItemShow(postItem)
-                        }
-                    }
+//                    myPostList.forEachIndexed { _, postItem ->
+//                        item {
+//                            PostItemShow(postItem)
+//                        }
+//                    }
                 }
 
                 Spacer(modifier = Modifier.height(bottomHeight.dp))

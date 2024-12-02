@@ -78,7 +78,6 @@ object UserPrefs {
         return prefs.getString(KEY_USER_ID, null)
     }
 
-
     // 获取用户邮箱
     fun getEmail(context: Context): String? {
         val prefs = getSharedPreferences(context)

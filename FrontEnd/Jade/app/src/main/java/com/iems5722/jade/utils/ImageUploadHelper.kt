@@ -3,9 +3,6 @@ package com.iems5722.jade.utils
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,11 +42,4 @@ class ImageUploadHelper {
             }
         }
     )
-
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    fun uriToBitmap(context: Context, uri: Uri): Bitmap {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
-        return ImageDecoder.decodeBitmap(source)
-    }
 }

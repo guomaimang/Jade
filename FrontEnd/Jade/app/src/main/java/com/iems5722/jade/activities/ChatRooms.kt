@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,11 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +54,11 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageLinkGenerator
+import com.iems5722.jade.utils.RetrofitInstance
+import com.iems5722.jade.utils.UserPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ChatRooms : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
@@ -75,27 +78,46 @@ class ChatRooms : ComponentActivity() {
 
 @Composable
 fun chatRoomsScreen() {
-    // TODO: Get my nickname and avatar
-    val nickname = "Nickname"
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-
-    // TODO: Get ChatRooms
-    val testChatroomId = "1"
-    val testChatroomName = "Test"
-    val testChatroomAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val testLatestMessage = "Hello"
-    val testLatestMessageTime = "Today 13:14"
-    val testUnRead = 0
-
-    var chatRoomList by remember { mutableStateOf(listOf<Chatroom>()) }
-    chatRoomList = listOf(
-        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead),
-        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead),
-        Chatroom(testChatroomId, testChatroomAvatar, testChatroomName, testLatestMessage, testLatestMessageTime, testUnRead)
-    )
-
 
     val context = LocalContext.current
+
+    val nickname = UserPrefs.getNickname(context)
+    val avatar = UserPrefs.getAvatar(context)
+
+    var chatRoomList by remember { mutableStateOf(listOf<Chatroom>()) }
+
+    val jwt = UserPrefs.getJwt(context).toString()
+
+    val topicApiService = RetrofitInstance(jwt).topicApiService()
+    LaunchedEffect(true) {
+        try {
+            val response = withContext(Dispatchers.IO) {
+                topicApiService.getTopics()
+            }
+
+            if (response.code == 0 && response.data != null) {
+                val topicsTemp = response.data
+                val chatRooms = topicsTemp.map { topic ->
+                    Chatroom(
+                        chatroomId = topic.id.toString(),
+                        chatroomAvatar = ImageLinkGenerator.getUserImage(topic.id),
+                        chatroomName = topic.tag,
+                        latestMessage = "Hello",
+                        latestMessageTime = "Today 13:14",
+                        unRead = 0
+                    )
+                }
+
+                withContext(Dispatchers.Main) {
+                    chatRoomList = chatRooms
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
+        }
+    }
+
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
@@ -158,11 +180,13 @@ fun chatRoomsScreen() {
                     )
                     Spacer(modifier = Modifier.width(16.dp))
 //                    Text(text = stringResource(R.string.app_name))
-                    Text(
-                        text = nickname,
-                        style = TextStyle(fontSize = 24.sp),
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    if (nickname != null) {
+                        Text(
+                            text = nickname,
+                            style = TextStyle(fontSize = 24.sp),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -245,7 +269,7 @@ fun chatRoomsScreen() {
                 .background(Color.Transparent)
         ) {
             LazyColumn {
-                item{
+                item {
                     // Leave place for header
                     Spacer(modifier = Modifier.height(headerHeight.dp))
                 }
@@ -254,9 +278,9 @@ fun chatRoomsScreen() {
                     Spacer(modifier = Modifier.height(8.dp))
                     SingleChatroomShow(chatroom)
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (index != chatRoomList.size -1) {
+                    if (index != chatRoomList.size - 1) {
                         HorizontalDivider()
-                    }else {
+                    } else {
                         Spacer(modifier = Modifier.height(bottomHeight.dp))
                     }
                 }
@@ -274,6 +298,8 @@ fun SingleChatroomShow(chatroom: Chatroom) {
                 // TODO: What to bring?
 
                 val intent = Intent(context, ChatActivities::class.java)
+                intent.putExtra("name", chatroom.chatroomName)
+                intent.putExtra("id", chatroom.chatroomId)
                 context.startActivity(intent)
             }
         )
@@ -316,12 +342,12 @@ fun SingleChatroomShow(chatroom: Chatroom) {
                 style = TextStyle(fontSize = 10.sp)
             )
             val flag = (chatroom.unRead == 0)
-            if (flag){
+            if (flag) {
                 Text(
                     text = "${chatroom.unRead}",
                     style = TextStyle(color = Color.Gray)
                 )
-            }else{
+            } else {
                 Text(
                     text = "${chatroom.unRead}",
                     style = TextStyle(color = Color.Red)

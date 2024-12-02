@@ -252,10 +252,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
     @SuppressLint("CoroutineCreationDuringComposition")
     private fun initializeSelectedTopic() {
-        val topicApiService = RetrofitInstance.topicApiService()
+        val jwt = UserPrefs.getJwt(this).toString()
+        val topicApiService = RetrofitInstance(jwt).topicApiService()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = withContext(Dispatchers.IO) {

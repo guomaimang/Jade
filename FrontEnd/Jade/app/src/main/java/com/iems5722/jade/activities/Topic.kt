@@ -107,7 +107,9 @@ fun TopicScreen() {
 
     var topics by remember { mutableStateOf(listOf<Topics>()) }
 
-    val topicApiService = RetrofitInstance.topicApiService()
+    val jwt = UserPrefs.getJwt(context).toString()
+
+    val topicApiService = RetrofitInstance(jwt).topicApiService()
     LaunchedEffect(true) {
         try {
             val response = withContext(Dispatchers.IO) {
@@ -137,14 +139,13 @@ fun TopicScreen() {
     selected = UserPrefs.getSelectedTopic(context)
     var postList by remember { mutableStateOf(listOf<Post>()) }
 
-    val pictureApiService = RetrofitInstance.pictureApiService()
-    val userApiService = RetrofitInstance.userApiService()
+    val pictureApiService = RetrofitInstance(jwt).pictureApiService()
+    val userApiService = RetrofitInstance(jwt).userApiService()
 
     val imageUploadHelper = ImageUploadHelper()
     val photoPickerLauncher = imageUploadHelper.setupMediaPicker(
         context = context,
     )
-    val jwt = UserPrefs.getJwt(context).toString()
 
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }

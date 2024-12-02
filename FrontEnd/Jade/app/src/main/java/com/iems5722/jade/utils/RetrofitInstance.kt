@@ -3,6 +3,7 @@ package com.iems5722.jade.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.iems5722.jade.apis.PictureApiService
+import com.iems5722.jade.apis.TopicApiService
 import com.iems5722.jade.apis.UserApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -14,7 +15,7 @@ object RetrofitInstance {
 
     // 创建 OkHttpClient，延迟获取JWT并添加JWT拦截器
     @Composable
-    private fun getOkHttpClient(): OkHttpClient {
+    fun getOkHttpClient(): OkHttpClient {
         val context = LocalContext.current
         val jwt = UserPrefs.getJwt(context)
         return OkHttpClient.Builder()
@@ -42,4 +43,10 @@ object RetrofitInstance {
     fun userApiService(): UserApiService {
         return getRetrofit().create(UserApiService::class.java)
     }
+
+    @Composable
+    fun topicApiService(): TopicApiService {
+        return getRetrofit().create(TopicApiService::class.java)
+    }
+
 }

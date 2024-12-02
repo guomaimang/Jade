@@ -5,7 +5,6 @@ import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Picture
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -25,13 +24,13 @@ interface PictureApiService {
 
     @Multipart
     @POST("/picture/upload")
-    fun uploadPicture(
+    suspend fun uploadPicture(
         @Part file: MultipartBody.Part,
         @Part("picture") picture: String
-    ): Call<ResultWrapper<Picture>>
+    ): ResultWrapper<Picture>
 
     @DELETE("/picture/delete")
-    fun deletePicture(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Int>>
+    fun deletePicture(@Query("pictureId") pictureId: Int): ResultWrapper<Int>
 
     @GET("/picture/get_file")
     suspend fun getPictureFile(
@@ -41,5 +40,5 @@ interface PictureApiService {
     ): Response<ResponseBody>
 
     @GET("/picture/info")
-    fun getPictureInfo(@Query("pictureId") pictureId: Int): Call<ResultWrapper<Picture>>
+    fun getPictureInfo(@Query("pictureId") pictureId: Int): ResultWrapper<Picture>
 }

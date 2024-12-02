@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
@@ -53,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
@@ -61,7 +62,9 @@ import com.iems5722.jade.utils.ImageLinkGenerator
 import com.iems5722.jade.utils.ImageUploadHelper
 import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class Topic : ComponentActivity() {
@@ -79,8 +82,8 @@ class Topic : ComponentActivity() {
             }
         }
     }
-
 }
+
 
 data class Post(
     var image: String,
@@ -91,47 +94,67 @@ data class Post(
     val time: String
 )
 
-// TODO: Define the kind!
-enum class Type {
-    ChineseNewYear, MidAutumnFestival, ChingMingFestival, DragonBoatFestival, LanternFestival
-}
+data class Topics(
+    val id: Int,
+    val tag: String,
+)
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun TopicScreen() {
 
-    val topics = remember { Type.entries.toTypedArray() }
-    var selected by remember { mutableStateOf("${Type.entries[0]}") }
+    val context = LocalContext.current
+
+    var topics by remember { mutableStateOf(listOf<Topics>()) }
+
+    val topicApiService = RetrofitInstance.topicApiService()
+    LaunchedEffect(true) {
+        try {
+            val response = withContext(Dispatchers.IO) {
+                topicApiService.getTopics()
+            }
+
+            if (response.code == 0 && response.data != null) {
+                val topicsTemp = response.data
+                val topicsList = topicsTemp.map { topic ->
+                    Topics(
+                        id = topic.id,
+                        tag = topic.tag
+                    )
+                }
+
+                withContext(Dispatchers.Main) {
+                    topics = topicsList
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
+        }
+    }
+
+    var selected by remember { mutableStateOf(-1) }
+    selected = UserPrefs.getSelectedTopic(context)
     var postList by remember { mutableStateOf(listOf<Post>()) }
 
     val pictureApiService = RetrofitInstance.pictureApiService()
     val userApiService = RetrofitInstance.userApiService()
 
-    // TODO: Get content by selected tag, selected tag are String in Type
-
-    val testImage0 = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-    val testImage = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252350295.png"
-    val testTitle = "Test Title"
-    val testContent = "Test content"
-    val testUserAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val testUserNickname = "Test"
-    val testTime = "Today 13:14"
-
-    val context = LocalContext.current
     val imageUploadHelper = ImageUploadHelper()
     val photoPickerLauncher = imageUploadHelper.setupMediaPicker(
         context = context,
     )
+    val jwt = UserPrefs.getJwt(context).toString()
 
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(true) {
         try {
             // 异步请求图片数据
             val response = withContext(Dispatchers.IO) {
                 pictureApiService.getPictures(
-                    topicId = 4,
+                    topicId = selected,
                     pageNum = 1,
                     pageSize = 20
                 )
@@ -143,13 +166,6 @@ fun TopicScreen() {
 
                 println("Total pictures: $totalPictures")
 
-                pictureData?.rows?.forEach { image ->
-                    println("Title: ${image.title}")
-                    println("Location: ${image.location}")
-                    println("Description: ${image.description}")
-                }
-
-
                 // 构造 Post 对象列表并更新 postList
                 val posts = pictureData.rows?.map { image ->
                     // 使用异步请求获取用户信息
@@ -160,16 +176,8 @@ fun TopicScreen() {
                     // 防止 userInfo 为 null
                     val nickname = userInfo?.data?.nickname ?: "Unknown User"
 
-//                    val imageFile = withContext(Dispatchers.IO) {
-//                        pictureApiService.getPictureFile(
-//                            image.fileName,
-//                            image.userId.toString(),
-//                            "thumbnail"
-//                        )
-//                    }
-
                     Post(
-                        image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thunbnail",
+                        image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
                         title = image.title ?: "No Title",
                         content = image.description ?: "No Description",
                         userAvatar = ImageLinkGenerator.getUserImage(image.userId),
@@ -205,23 +213,6 @@ fun TopicScreen() {
 //            Text(text = it, color = Color.Red)
 //        }
 //    }
-
-//    postList = listOf(
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-//    )
 
     // TODO: Get user name and user image
     val nickname = UserPrefs.getNickname(context)
@@ -394,30 +385,89 @@ fun TopicScreen() {
 
                 // Tag Selection
                 LazyRow {
-                    items(topics) { topic ->
-                        Column(
-                            modifier = Modifier.clickable(
-                                onClick = {
-                                    selected = topic.name
+                    topics.forEachIndexed { _, topic ->
+                        item {
+                            Column(
+                                modifier = Modifier.clickable(
+                                    onClick = {
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            selected = topic.id
+                                            UserPrefs.setSelectedTopic(
+                                                context,
+                                                selected
+                                            )
+                                            // TODO: Selected tag changed, re-get the postList
+                                            try {
+                                                // 异步请求图片数据
+                                                val response = withContext(Dispatchers.IO) {
+                                                    pictureApiService.getPictures(
+                                                        topicId = selected,
+                                                        pageNum = 1,
+                                                        pageSize = 20
+                                                    )
+                                                }
 
-                                    // TODO: Selected tag changed, re-get the postList
+                                                if (response.code == 0 && response.data != null) {
+                                                    val pictureData = response.data
+                                                    val totalPictures = pictureData?.total
 
+                                                    println("Total pictures: $totalPictures")
+
+                                                    // 构造 Post 对象列表并更新 postList
+                                                    val posts = pictureData.rows?.map { image ->
+                                                        // 使用异步请求获取用户信息
+                                                        val userInfo = withContext(Dispatchers.IO) {
+                                                            userApiService.getUserInfo(image.userId)
+                                                        }
+
+                                                        // 防止 userInfo 为 null
+                                                        val nickname =
+                                                            userInfo?.data?.nickname
+                                                                ?: "Unknown User"
+
+                                                        Post(
+                                                            image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
+                                                            title = image.title ?: "No Title",
+                                                            content = image.description
+                                                                ?: "No Description",
+                                                            userAvatar = ImageLinkGenerator.getUserImage(
+                                                                image.userId
+                                                            ),
+                                                            userNickname = nickname,
+                                                            time = image.createTime?.toString()
+                                                                ?: "Unknown Time"
+                                                        )
+                                                    } ?: emptyList()
+
+                                                    postList = posts
+                                                } else {
+                                                    // 处理图片数据为空的情况
+                                                    throw Exception("Failed to fetch picture data or data is empty")
+                                                }
+
+                                            } catch (e: Exception) {
+                                                // 捕获异常并在 UI 上显示错误信息
+                                                Log.e("TopicScreen", "Error: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                )
+                            ) {
+                                if (selected == topic.id) {
+                                    Text(
+                                        text = topic.tag,
+                                        style = TextStyle(color = Color.Black)
+                                    )
+                                } else {
+                                    Text(
+                                        text = topic.tag,
+                                        style = TextStyle(color = Color.Gray)
+                                    )
                                 }
-                            )
-                        ) {
-                            if (selected == topic.name) {
-                                Text(
-                                    text = topic.name,
-                                    style = TextStyle(color = Color.Black)
-                                )
-                            } else {
-                                Text(
-                                    text = topic.name,
-                                    style = TextStyle(color = Color.Gray)
-                                )
                             }
+                            Spacer(modifier = Modifier.width(8.dp))
+
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
 
@@ -434,7 +484,7 @@ fun TopicScreen() {
                 ) {
                     postList.forEachIndexed { _, postItem ->
                         item {
-                            PostItemShow(postItem)
+                            PostItemShow(postItem, jwt)
                         }
                     }
                 }
@@ -460,7 +510,7 @@ fun TopicScreen() {
 }
 
 @Composable
-fun PostItemShow(postItem: Post) {
+fun PostItemShow(postItem: Post, jwt: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -472,8 +522,11 @@ fun PostItemShow(postItem: Post) {
                 .clickable(
                     onClick = {
                         // TODO: What to pass for select post?
-
                         val intent = Intent(context, Detail::class.java)
+                        intent.putExtra("postTitle", postItem.title)
+                        intent.putExtra("postContent", postItem.content)
+                        intent.putExtra("postImage", postItem.image)
+                        intent.putExtra("time", postItem.time)
                         context.startActivity(intent)
                     }
                 )
@@ -482,6 +535,11 @@ fun PostItemShow(postItem: Post) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(postItem.image)
+                    .httpHeaders(
+                        NetworkHeaders.Builder()
+                            .add("jwt", jwt)
+                            .build()
+                    )
                     .build(),
                 placeholder = painterResource(R.drawable.placeholder),
                 contentDescription = "user_img",
@@ -529,15 +587,18 @@ fun PostItemShow(postItem: Post) {
     }
 }
 
-// TODO: if time is lick timestamp or something, transfer
 fun timeToShow(time: String): String {
     val timeReturn: String
 
-    // TODO: let time to be like Today 11:00 or 2 hours ago or yesterday xxx or 1 01-01 or something
-    timeReturn = time
+    // 将时间字符串按照空格分割成数组
+    val timeParts = time.split(" ")
+
+    // 提取前三个元素并合并成字符串
+    timeReturn = timeParts.take(3).joinToString(" ")
 
     return timeReturn
 }
+
 //@Preview(showBackground = true)
 //@Composable
 //fun TopicPreview() {

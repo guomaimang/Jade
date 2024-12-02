@@ -11,6 +11,7 @@ object UserPrefs {
     private const val KEY_NICKNAME = "nickname"
     private const val KEY_JWT = "jwt"
     private const val KEY_AVATAR = "image_url"
+    private const val SELECTED_TOPIC = "selected_topic"
 
     // 默认的用户数据
     private const val DEFAULT_IMAGE_URL =
@@ -61,11 +62,22 @@ object UserPrefs {
         editor.apply()
     }
 
+    fun setSelectedTopic(context: Context, topicId: Int) {
+        val prefs = getSharedPreferences(context)
+        prefs.edit().putInt(SELECTED_TOPIC, topicId).apply()
+    }
+
+    fun getSelectedTopic(context: Context): Int {
+        val prefs = getSharedPreferences(context)
+        return prefs.getInt(SELECTED_TOPIC, -1)
+    }
+
     // 获取用户ID
     fun getUserId(context: Context): String? {
         val prefs = getSharedPreferences(context)
         return prefs.getString(KEY_USER_ID, null)
     }
+
 
     // 获取用户邮箱
     fun getEmail(context: Context): String? {

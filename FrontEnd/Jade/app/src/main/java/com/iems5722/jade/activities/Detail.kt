@@ -2,13 +2,10 @@ package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Rect
-import android.graphics.Shader
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -41,39 +38,47 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.LinearGradientShader
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.UserPrefs
 
+// TODO: 高级信息获取展示, 具体如何展示, 类已经定义好了, 明天商讨
 class Detail : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 从 Intent 获取传递的数据
+        val postTitle = intent.getStringExtra("postTitle")
+        val postContent = intent.getStringExtra("postContent")
+
+        val postImage = intent.getStringExtra("postImage")
+        val pictures = mutableListOf<String>()
+        pictures.add(postImage.toString())
+
+        val time = intent.getStringExtra("time")
+
         enableEdgeToEdge()
         setContent {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    DetailScreen()
+                    DetailScreen(postTitle, postContent, pictures)
                 }
             }
         }
@@ -82,31 +87,23 @@ class Detail : ComponentActivity() {
 
 
 @Composable
-@Preview
-fun DetailScreen() {
+fun DetailScreen(
+    postTitle: String?,
+    postContent: String?,
+    pictures: MutableList<String>,
+) {
     // TODO: Get Pictures
 
-    val testPic = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411260316528.png"
-    val picList = listOf(
-        testPic,
-        testPic,
-        testPic,
-        testPic,
-        testPic,
-    )
+    val context = LocalContext.current
 
     // TODO: Get Post Title and content
 
-    val postTitle = "Test"
-    val postContent = "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest"
+    val jwt = UserPrefs.getJwt(context).toString()
 
     // TODO: Get extra information
 
-    // TODO: This is the post's not current user's
-    val avatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val nickname = "nickname"
-
-    var context = LocalContext.current
+    val avatar = UserPrefs.getAvatar(context)
+    val nickname = UserPrefs.getNickname(context)
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -174,6 +171,11 @@ fun DetailScreen() {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(avatar)
+                            .httpHeaders(
+                                NetworkHeaders.Builder()
+                                    .add("jwt", jwt)
+                                    .build()
+                            )
                             .crossfade(true)
                             .build(),
                         placeholder = painterResource(R.drawable.placeholder),
@@ -186,11 +188,13 @@ fun DetailScreen() {
                     )
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Text(
-                        text = nickname,
-                        style = TextStyle(fontSize = 24.sp),
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    if (nickname != null) {
+                        Text(
+                            text = nickname,
+                            style = TextStyle(fontSize = 24.sp),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
@@ -236,8 +240,14 @@ fun DetailScreen() {
         ) {
             LazyColumn {
                 item { Spacer(modifier = Modifier.height(headerHeight.dp)) }
-                item { banner(picList) }
-                item { DetailPostShow(postTitle, postContent) }
+                item { banner(pictures) }
+                item {
+                    if (postTitle != null) {
+                        if (postContent != null) {
+                            DetailPostShow(postTitle, postContent)
+                        }
+                    }
+                }
                 item { AdvancedInfo() }
                 item { PostDivider() }
 

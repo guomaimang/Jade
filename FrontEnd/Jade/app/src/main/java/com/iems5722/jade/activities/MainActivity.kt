@@ -12,7 +12,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Paint
@@ -52,17 +50,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.ImageLinkGenerator
+import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 @Suppress("NAME_SHADOWING")
 class MainActivity : ComponentActivity() {
+
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,6 +126,7 @@ class MainActivity : ComponentActivity() {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     Login()
+                    initializeSelectedTopic()
                 }
             }
         }
@@ -136,25 +142,11 @@ class MainActivity : ComponentActivity() {
 
         val context = LocalContext.current
 
-//        var text1 by remember { mutableStateOf(TextFieldValue()) }
-//        var text2 by remember { mutableStateOf(TextFieldValue()) }
-
-//        val colorStops = arrayOf(
-//            0.0f to Color(0xFFF3F2F7),
-//            0.1f to Color(0xFFE7F0F7),
-//            0.2f to Color(0xFFC8E5FC),
-//            0.7f to Color(0xFFCDE1FB),
-//            0.75f to Color(0xFFDDE5FA),
-//            0.8f to Color(0xFFECEFF6),
-//            0.9f to Color(0xFFF3F2F7),
-//            1f to Color(0xFFF3F2F7),
-//        )
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
 //                .background(Brush.linearGradient(colorStops = colorStops))
-                ,
+            ,
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -222,15 +214,16 @@ class MainActivity : ComponentActivity() {
                                 "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=45792ac5-5f4c-49a7-ba2d-1845333171a1&response_type=code&redirect_uri=https://jade.dev.hirsun.tech/oauth2.html&response_mode=query&scope=openid+profile+email&state=12345"
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                             startActivity(intent)
-                        }else {
-                            Toast.makeText(context,R.string.NotAgreeTips,Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, R.string.NotAgreeTips, Toast.LENGTH_SHORT)
+                                .show()
                         }
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = "Login/Register")
                 }
-                Row (
+                Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Checkbox(
@@ -239,11 +232,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                     )
                     Text(
-                        text =  stringResource(R.string.tips),
+                        text = stringResource(R.string.tips),
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
                     Text(
-                        text =  stringResource(R.string.file),
+                        text = stringResource(R.string.file),
                         style = TextStyle(color = colorResource(R.color.microsoftBlue)),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
@@ -256,6 +249,31 @@ class MainActivity : ComponentActivity() {
 
             }
 
+        }
+    }
+
+    @Composable
+    @SuppressLint("CoroutineCreationDuringComposition")
+    private fun initializeSelectedTopic() {
+        val topicApiService = RetrofitInstance.topicApiService()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    topicApiService.getTopics()
+                }
+
+                if (response.code == 0 && response.data != null) {
+                    val topics = response.data
+                    // 获取第一个 topic 的 id
+                    val firstTopicId = topics.firstOrNull()?.id
+                    if (firstTopicId != null) {
+                        UserPrefs.setSelectedTopic(this@MainActivity, firstTopicId)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
+            }
         }
     }
 }
@@ -319,4 +337,5 @@ fun AppNameText(
         }
     }
 }
+
 

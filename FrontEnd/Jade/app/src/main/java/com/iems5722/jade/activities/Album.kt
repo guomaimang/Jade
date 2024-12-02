@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.UserPrefs
 
 class Album : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,11 +62,11 @@ class Album : ComponentActivity() {
 @Preview
 fun AlbumScreen() {
 
-    val topicId = 4
+    val context = LocalContext.current
+
+    val topicId = UserPrefs.getSelectedTopic(context)
 
     val url = "https://jade.dev.hirsun.tech/map.html?topicId=$topicId"
-
-    var context = LocalContext.current
 
     Box(
         modifier = Modifier

@@ -3,6 +3,7 @@ package com.iems5722.jade.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +53,11 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageLinkGenerator
+import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class Setting : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -74,26 +80,70 @@ fun SettingScreen(modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
 
+    val jwt = UserPrefs.getJwt(context).toString()
+
+    val pictureApiService = RetrofitInstance(jwt).pictureApiService()
+    val userApiService = RetrofitInstance(jwt).userApiService()
+
     // TODO: Get User's information
     val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)
     val mail = UserPrefs.getEmail(context)
 
-    // TODO: Get my post
-    val testImage0 = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252351822.png"
-    val testImage = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411252350295.png"
-    val testTitle = "Test Title"
-    val testContent = "Test content"
-    val testUserAvatar = "https://cdn.jsdelivr.net/gh/MonsterXia/Piclibrary/Pic202411222320597.png"
-    val testUserNickname = "Test"
-    val testTime = "Today 13:14"
-
     var myPostList by remember { mutableStateOf(listOf<Post>()) }
-    myPostList = listOf(
-        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-        Post(testImage0, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-        Post(testImage, testTitle, testContent, testUserAvatar, testUserNickname, testTime),
-    )
+
+    LaunchedEffect(true) {
+        try {
+            // 异步请求图片数据
+            val response = withContext(Dispatchers.IO) {
+                pictureApiService.getPicturesMyself(
+                    pageNum = 1,
+                    pageSize = 20
+                )
+            }
+
+            if (response.code == 0 && response.data != null) {
+                val pictureData = response.data
+                val totalPictures = pictureData?.total
+
+                println("Total pictures: $totalPictures")
+
+                // 构造 Post 对象列表并更新 postList
+                val posts = pictureData.rows?.map { image ->
+                    // 使用异步请求获取用户信息
+                    val userInfo = withContext(Dispatchers.IO) {
+                        userApiService.getUserInfo(image.userId)
+                    }
+
+                    // 防止 userInfo 为 null
+                    val nickname = userInfo?.data?.nickname ?: "Unknown User"
+
+                    Post(
+                        image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
+                        title = image.title ?: "No Title",
+                        content = image.description ?: "No Description",
+                        userAvatar = ImageLinkGenerator.getUserImage(image.userId),
+                        userNickname = nickname,
+                        time = image.createTime?.toString() ?: "Unknown Time"
+                    )
+                } ?: emptyList()
+
+                withContext(Dispatchers.Main) {
+                    myPostList = posts
+//                    isLoading = false
+                }
+            } else {
+                // 处理图片数据为空的情况
+                throw Exception("Failed to fetch picture data or data is empty")
+            }
+
+        } catch (e: Exception) {
+            // 捕获异常并在 UI 上显示错误信息
+            Log.e("TopicScreen", "Error: ${e.message}")
+//            errorMessage = "Error: ${e.message}"
+//            isLoading = false
+        }
+    }
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }

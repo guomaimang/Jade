@@ -22,6 +22,12 @@ interface PictureApiService {
         @Query("pageSize") pageSize: Int = 100
     ): ResultWrapper<PageBean<Picture>>
 
+    @GET("/picture/myself")
+    suspend fun getPicturesMyself(
+        @Query("pageNum") pageNum: Int = 1,
+        @Query("pageSize") pageSize: Int = 100
+    ): ResultWrapper<PageBean<Picture>>
+
     @Multipart
     @POST("/picture/upload")
     suspend fun uploadPicture(

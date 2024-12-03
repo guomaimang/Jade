@@ -8,10 +8,45 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.RetrofitInstance
@@ -25,6 +60,8 @@ import java.util.Date
 class ChatActivities : ComponentActivity() {
 
     private val messages = mutableStateListOf<Message>()
+    private val nickname = UserPrefs.getNickname(this)
+    private val currentUserId = UserPrefs.getUserId(this)
 
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -38,28 +75,18 @@ class ChatActivities : ComponentActivity() {
         setContent {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-//                    ChatScreen(
-//                        messages = messages,
-//                        chatroomName = name.toString(),
-//                        onSendMessage = ::sendMessage,
-//                        onRefreshMessages = {
-//                            if (topicId != null) {
-//                                fetchMessages(topicId)
-//                            }
-//                        },
-//                        onBackPressed = TODO()
-//                    )
+                    ChatScreen(
+                        messages = messages,
+                        chatroomName = name.toString(),
+                        topicId = topicId.toString(),
+                        onSendMessage = ::sendMessage,
+                        onRefreshMessages = ::fetchMessages,
+                        onBackPressed = { onBackPressedDispatcher.onBackPressed() }
+                    )
                 }
             }
         }
     }
-
-    data class Message(
-        val nickname: String,
-        val content: String,
-        val type: Int,
-        val createTime: Date,
-    )
 
     @SuppressLint("CoroutineCreationDuringComposition")
     private fun fetchMessages(topicId: String) {
@@ -80,13 +107,13 @@ class ChatActivities : ComponentActivity() {
 
                     println("Total messages: $totalMessages")
 
-                    // 构造 Post 对象列表并更新 postList
                     messagesData.rows.map { message ->
                         messageList.add(
                             Message(
                                 nickname = message.nickname,
                                 content = message.content,
                                 type = message.type,
+                                userId = message.userId,
                                 createTime = message.createTime,
                             )
                         )
@@ -116,191 +143,205 @@ class ChatActivities : ComponentActivity() {
             }
         }
     }
+
+    @SuppressLint("CoroutineCreationDuringComposition")
+    private fun sendMessage(topicId: String, messageText: String) {
+        val jwt = UserPrefs.getJwt(this).toString()
+        val messageApiService = RetrofitInstance(jwt).messageApiService()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    messageApiService.postMessage(
+                        com.iems5722.jade.pojo.Message(
+                            id = "",
+                            createTime = null,
+                            userId = currentUserId?.toInt() ?: 0,
+                            type = null,
+                            content = messageText,
+                            nickname = nickname.toString(),
+                            topicId = topicId.toInt()
+                        )
+                    )
+                }
+
+                if (response.code == 0) {
+                    withContext(Dispatchers.Main) {
+                        messages.add(
+                            Message(
+                                nickname = nickname.toString(),
+                                content = messageText,
+                                type = 1,
+                                createTime = Date(),
+                                userId = currentUserId?.toInt() ?: 0
+                            )
+                        )
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ChatActivities,
+                            "Failed to send messages.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@ChatActivities,
+                        "Error sending messages: ${e.localizedMessage}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
 }
 
 
-//    @SuppressLint("CoroutineCreationDuringComposition")
-//    private fun sendMessage() {
-//        val jwt = UserPrefs.getJwt(this).toString()
-//        val messageApiService = RetrofitInstance(jwt).messageApiService()
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                val response = withContext(Dispatchers.IO) {
-//                    messageApiService.postMessage(
-//
-//                    )
-//                }
-//
-//                if (response.code == 0 && response.data != null) {
-//                    val messagesData = response.data
-//                    val totalMessages = messagesData.total
-//                    val messageList = mutableListOf<Message>()
-//
-//                    println("Total messages: $totalMessages")
-//
-//                    // 构造 Post 对象列表并更新 postList
-//                    messagesData.rows.map { message ->
-//                        messageList.add(
-//                            Message(
-//                                nickname = message.nickname,
-//                                content = message.content,
-//                                type = message.type,
-//                                createTime = message.createTime,
-//                            )
-//                        )
-//                    }
-//
-//                    withContext(Dispatchers.Main) {
-//                        messages.clear()
-//                        messages.addAll(messageList)
-//                    }
-//                } else {
-//                    withContext(Dispatchers.Main) {
-//                        Toast.makeText(
-//                            this@ChatActivities,
-//                            "Failed to load messages.",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                withContext(Dispatchers.Main) {
-//                    Toast.makeText(
-//                        this@ChatActivities,
-//                        "Error loading messages: ${e.localizedMessage}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        }
-//    }
-//
-//    @Composable
-//    fun ChatScreen(
-//        messages: List<Message>,
-//        chatroomName: String,
-//        onSendMessage: (String) -> Unit,
-//        onRefreshMessages: () -> Unit,
-//        onBackPressed: () -> Unit
-//    ) {
-//        var messageText by remember { mutableStateOf(TextFieldValue()) }
-//
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(8.dp),
-//            verticalArrangement = Arrangement.SpaceBetween
-//        ) {
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                IconButton(onClick = onBackPressed) {
-//                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-//                }
-//                Spacer(Modifier.weight(1f))
-//                Text(
-//                    text = chatroomName,
-//                    style = MaterialTheme.typography.titleMedium,
-//                    modifier = Modifier.padding(start = 8.dp),
-//                    color = Color.Black
-//                )
-//                Spacer(Modifier.weight(1f))
-//                IconButton(onClick = onRefreshMessages) {
-//                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.Blue)
-//                }
-//            }
-//
-//            LazyColumn(
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .padding(8.dp),
-//                verticalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                items(messages) { message ->
-//                    MessageCard(message)
-//                }
-//            }
-//
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(8.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                TextField(
-//                    value = messageText,
-//                    onValueChange = { messageText = it },
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .padding(8.dp),
-//                    placeholder = { Text("Enter your message...") },
-//                    shape = MaterialTheme.shapes.medium,
-//                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-//                    keyboardActions = KeyboardActions(onSend = {
-//                        if (messageText.text.isNotEmpty()) {
-//                            onSendMessage(messageText.text)
-//                            messageText = TextFieldValue()
-//                        }
-//                    })
-//                )
-//                IconButton(onClick = {
-//                    if (messageText.text.isNotEmpty()) {
-//                        onSendMessage(messageText.text)
-//                        messageText = TextFieldValue()
-//                    }
-//                }) {
-//                    Icon(
-//                        Icons.AutoMirrored.Filled.Send,
-//                        contentDescription = "Send Message",
-//                        tint = Color.Blue
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//    @Composable
-//    fun MessageCard(message: Message) {
-//        val alignment = if (message.isCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
-//        Box(
-//            modifier = Modifier.fillMaxWidth(),
-//            contentAlignment = alignment
-//        ) {
-//            Card(
-//                shape = RoundedCornerShape(16.dp),
-//                colors = CardDefaults.cardColors(
-//                    containerColor = if (message.isCurrentUser) Color(0xFFD1FFDA) else Color(
-//                        0xFFE0E0E0
-//                    )
-//                ),
-//                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-//            ) {
-//                Column(
-//                    modifier = Modifier.padding(12.dp)
-//                ) {
-//                    Text(
-//                        text = message.name,
-//                        style = MaterialTheme.typography.labelSmall,
-//                        color = if (message.isCurrentUser) Color(0xFF00796B) else Color(0xFF5D4037)
-//                    )
-//                    Spacer(modifier = Modifier.height(4.dp))
-//                    Text(
-//                        text = message.message,
-//                        style = MaterialTheme.typography.bodyMedium
-//                    )
-//                    Spacer(modifier = Modifier.height(4.dp))
-//                    Text(
-//                        text = message.time,
-//                        style = MaterialTheme.typography.labelSmall,
-//                        color = Color.Gray
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//}
+@Composable
+fun ChatScreen(
+    messages: List<Message>,
+    topicId: String,
+    chatroomName: String,
+    onSendMessage: (String, String) -> Unit,
+    onRefreshMessages: (String) -> Unit,
+    onBackPressed: () -> Unit
+) {
+    var messageText by remember { mutableStateOf(TextFieldValue()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBackPressed) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = chatroomName,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 8.dp),
+                color = Color.Black
+            )
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = { onRefreshMessages(topicId) }) {
+                Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.Blue)
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(messages) { message ->
+                MessageCard(message)
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextField(
+                value = messageText,
+                onValueChange = { messageText = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp),
+                placeholder = { Text("Enter your message...") },
+                shape = MaterialTheme.shapes.medium,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = {
+                    if (messageText.text.isNotEmpty()) {
+                        onSendMessage(topicId, messageText.toString())
+                        messageText = TextFieldValue()
+                    }
+                })
+            )
+            IconButton(onClick = {
+                if (messageText.text.isNotEmpty()) {
+                    onSendMessage(topicId, messageText.toString())
+                    messageText = TextFieldValue()
+                }
+            }) {
+                Icon(
+                    Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send Message",
+                    tint = Color.Blue
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MessageCard(message: Message) {
+    val context = LocalContext.current
+    val currentUserId = UserPrefs.getUserId(context)
+    val alignment = if (message.userId == (currentUserId?.toInt() ?: 0)) {
+        Alignment.CenterEnd
+    } else Alignment.CenterStart
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = alignment
+    ) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (message.userId == (currentUserId?.toInt() ?: 0)) Color(
+                    0xFFD1FFDA
+                ) else Color(
+                    0xFFE0E0E0
+                )
+            ),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
+                Text(
+                    text = message.nickname,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (message.userId == (currentUserId?.toInt()
+                            ?: 0)
+                    ) Color(0xFF00796B) else Color(0xFF5D4037)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = message.content,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = message.createTime.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    }
+}
+
+data class Message(
+    val nickname: String,
+    val content: String,
+    val type: Int?,
+    val createTime: Date?,
+    val userId: Int,
+)
 
 //
 //@Composable

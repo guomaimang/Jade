@@ -109,7 +109,73 @@ fun PostEditScreen(selectedImages: List<Uri>) {
                 }
             },
             actions = {
-                TextButton(onClick = { /* Publish action */ }) {
+                TextButton(onClick = {
+//                    CoroutineScope(Dispatchers.Main)
+//                        .launch {
+//                            selected = topic.id
+//                            UserPrefs.setSelectedTopic(
+//                                context,
+//                                selected
+//                            )
+//                            // TODO: Selected tag changed, re-get the postList
+//                            try {
+//                                // 异步请求图片数据
+//                                val response =
+//                                    withContext(Dispatchers.IO) {
+//                                        pictureApiService.getPictures(
+//                                            topicId = selected,
+//                                            pageNum = 1,
+//                                            pageSize = 20
+//                                        )
+//                                    }
+//
+//                                if (response.code == 0 && response.data != null) {
+//                                    val pictureData = response.data
+//                                    val totalPictures = pictureData?.total
+//
+//                                    println("Total pictures: $totalPictures")
+//
+//                                    // 构造 Post 对象列表并更新 postList
+//                                    val posts = pictureData.rows?.map { image ->
+//                                        // 使用异步请求获取用户信息
+//                                        val userInfo =
+//                                            _root_ide_package_.kotlinx.coroutines.withContext(
+//                                                _root_ide_package_.kotlinx.coroutines.Dispatchers.IO
+//                                            ) {
+//                                                userApiService.getUserInfo(image.userId)
+//                                            }
+//
+//                                        // 防止 userInfo 为 null
+//                                        val nickname =
+//                                            userInfo?.data?.nickname
+//                                                ?: "Unknown User"
+//
+//                                        Post(
+//                                            image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
+//                                            title = image.title ?: "No Title",
+//                                            content = image.description
+//                                                ?: "No Description",
+//                                            userAvatar = _root_ide_package_.com.iems5722.jade.utils.ImageLinkGenerator.getUserImage(
+//                                                image.userId
+//                                            ),
+//                                            userNickname = nickname,
+//                                            time = image.createTime?.toString()
+//                                                ?: "Unknown Time"
+//                                        )
+//                                    } ?: emptyList()
+//
+//                                    postList = posts
+//                                } else {
+//                                    // 处理图片数据为空的情况
+//                                    throw Exception("Failed to fetch picture data or data is empty")
+//                                }
+//
+//                            } catch (e: Exception) {
+//                                // 捕获异常并在 UI 上显示错误信息
+//                                Log.e("TopicScreen", "Error: ${e.message}")
+//                            }
+//                        }
+                }) {
                     Text("Publish", color = MaterialTheme.colorScheme.primary)
                 }
             }

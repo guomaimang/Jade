@@ -3,9 +3,10 @@ package com.iems5722.jade.activities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
-import android.location.Location
-import android.location.LocationManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -18,7 +19,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,14 +33,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,9 +61,18 @@ import coil3.compose.rememberAsyncImagePainter
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.MyLocationListener
+import com.iems5722.jade.utils.RetrofitInstance
+import com.iems5722.jade.utils.UserPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 
 @Suppress("DEPRECATION")
 class PostEdit : ComponentActivity() {
@@ -97,20 +106,57 @@ class PostEdit : ComponentActivity() {
     }
 
     private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            LOCATION_PERMISSION_REQUEST_CODE
+        )
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun PostEditScreen(selectedImages: List<Uri>) {
         val context = LocalContext.current
         locationListener = MyLocationListener(this)
-        // var locationListener: MyLocationListener = MyLocationListener(LocalContext.current)
+
+        val jwt = UserPrefs.getJwt(context).toString()
+
 
         var title by remember { mutableStateOf("") }
         var content by remember { mutableStateOf("") }
-        val tags = remember { mutableStateListOf<String>() }
+        var tag by remember { mutableStateOf<Int?>(null) }
+        var location by remember { mutableStateOf("Add Location") }
+
+        val pictureApiService = RetrofitInstance(jwt).pictureApiService()
+
+        var topics by remember { mutableStateOf(listOf<Topics>()) }
+        val topicApiService = RetrofitInstance(jwt).topicApiService()
+        LaunchedEffect(true) {
+            try {
+                val response =
+                    withContext(Dispatchers.IO) {
+                        topicApiService.getTopics()
+                    }
+
+                if (response.code == 0 && response.data != null) {
+                    val topicsTemp = response.data
+                    val topicsList = topicsTemp.map { topic ->
+                        Topics(
+                            id = topic.id,
+                            tag = topic.tag
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        topics = topicsList
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
+            }
+        }
 
 
         Column(
@@ -118,7 +164,6 @@ class PostEdit : ComponentActivity() {
                 .fillMaxSize()
                 .background(Color.White)
         ) {
-            // 顶部导航栏
             TopAppBar(
                 title = { Text("Edit Post") },
                 navigationIcon = {
@@ -135,71 +180,53 @@ class PostEdit : ComponentActivity() {
                 actions = {
                     IconButton(
                         onClick = {
-                            //                    CoroutineScope(Dispatchers.Main)
-//                        .launch {
-//                            selected = topic.id
-//                            UserPrefs.setSelectedTopic(
-//                                context,
-//                                selected
-//                            )
-//                            // TODO: Selected tag changed, re-get the postList
-//                            try {
-//                                // 异步请求图片数据
-//                                val response =
-//                                    withContext(Dispatchers.IO) {
-//                                        pictureApiService.getPictures(
-//                                            topicId = selected,
-//                                            pageNum = 1,
-//                                            pageSize = 20
-//                                        )
-//                                    }
-//
-//                                if (response.code == 0 && response.data != null) {
-//                                    val pictureData = response.data
-//                                    val totalPictures = pictureData?.total
-//
-//                                    println("Total pictures: $totalPictures")
-//
-//                                    // 构造 Post 对象列表并更新 postList
-//                                    val posts = pictureData.rows?.map { image ->
-//                                        // 使用异步请求获取用户信息
-//                                        val userInfo =
-//                                            _root_ide_package_.kotlinx.coroutines.withContext(
-//                                                _root_ide_package_.kotlinx.coroutines.Dispatchers.IO
-//                                            ) {
-//                                                userApiService.getUserInfo(image.userId)
-//                                            }
-//
-//                                        // 防止 userInfo 为 null
-//                                        val nickname =
-//                                            userInfo?.data?.nickname
-//                                                ?: "Unknown User"
-//
-//                                        Post(
-//                                            image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
-//                                            title = image.title ?: "No Title",
-//                                            content = image.description
-//                                                ?: "No Description",
-//                                            userAvatar = _root_ide_package_.com.iems5722.jade.utils.ImageLinkGenerator.getUserImage(
-//                                                image.userId
-//                                            ),
-//                                            userNickname = nickname,
-//                                            time = image.createTime?.toString()
-//                                                ?: "Unknown Time"
-//                                        )
-//                                    } ?: emptyList()
-//
-//                                    postList = posts
-//                                } else {
-//                                    // 处理图片数据为空的情况
-//                                    throw Exception("Failed to fetch picture data or data is empty")
-//                                }
-//
-//                            } catch (e: Exception) {
-//                                // 捕获异常并在 UI 上显示错误信息
-//                                Log.e("TopicScreen", "Error: ${e.message}")
-//                            }
-//                        }
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    // 解析 location 字符串
+                                    val coordinates =
+                                        location.trim('(', ')').split(",")
+                                    val coordinateX = coordinates[0]
+                                    val coordinateY = coordinates[1]
+
+                                    val jsonObject = JSONObject()
+                                    jsonObject.put("title", title)
+                                    jsonObject.put("description", content)
+                                    jsonObject.put("topicId", tag)
+                                    jsonObject.put("coordinateX", coordinateX)
+                                    jsonObject.put("coordinateY", coordinateY)
+                                    val jsonString = jsonObject.toString()
+
+                                    // 创建文件参数
+                                    val fileParam =
+                                        compressImage(context, selectedImages[0])
+
+                                    // 异步请求图片数据
+                                    val response =
+                                        withContext(Dispatchers.IO) {
+                                            fileParam?.let {
+                                                pictureApiService.uploadPicture(
+                                                    picture = jsonString,
+                                                    file = it
+                                                )
+                                            }
+                                        }
+
+                                    if (response != null) {
+                                        if (response.code == 0 && response.data != null) {
+                                            // 上传成功
+                                            Toast.makeText(
+                                                context,
+                                                "Upload Successful",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            throw Exception("Failed to fetch picture data or data is empty")
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("TopicScreen", "Error: ${e.message}")
+                                }
+                            }
                         },
                     ) {
                         Icon(
@@ -207,14 +234,8 @@ class PostEdit : ComponentActivity() {
                             contentDescription = "upload"
                         )
                     }
-//                TextButton(onClick = {
-//
-//                }) {
-//                    Text("Publish", color = MaterialTheme.colorScheme.primary)
-//                }
                 }
             )
-
             // 图片展示区域
             LazyRow(
                 modifier = Modifier
@@ -239,7 +260,7 @@ class PostEdit : ComponentActivity() {
 
             Text(
                 text = stringResource(R.string.UploadTitle),
-                modifier = Modifier.padding(16.dp,0.dp)
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
             BasicTextField(
                 value = title,
@@ -247,7 +268,7 @@ class PostEdit : ComponentActivity() {
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp,0.dp),
+                    .padding(16.dp, 0.dp),
                 decorationBox = { innerTextField ->
                     if (title.isEmpty()) {
                         Text("Add Title", color = Color.Gray)
@@ -259,8 +280,9 @@ class PostEdit : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = stringResource(R.string.UploadContent),
-                modifier = Modifier.padding(16.dp,0.dp)
+            Text(
+                text = stringResource(R.string.UploadContent),
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
             // 正文输入框
             BasicTextField(
@@ -269,7 +291,7 @@ class PostEdit : ComponentActivity() {
                 textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp,0.dp)
+                    .padding(16.dp, 0.dp)
                     .height(200.dp),
                 decorationBox = { innerTextField ->
                     if (content.isEmpty()) {
@@ -289,30 +311,33 @@ class PostEdit : ComponentActivity() {
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                tags.forEach { tag ->
+                topics.forEach { topic ->
                     item {
+                        val tagColor = if (tag == topic.id) Color.Cyan else Color.LightGray
                         Box(
                             modifier = Modifier
-                                .background(Color.LightGray, RoundedCornerShape(16.dp))
+                                .background(tagColor, RoundedCornerShape(16.dp))
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .clickable {
+                                    // 点击标签时更新tag的值为当前topic.id
+                                    tag = topic.id
+                                }
                         ) {
-                            Text("#$tag", color = Color.Black)
+                            Text("#${topic.tag}", color = Color.Black)
                         }
                     }
                 }
-                item {
-                    TextButton(onClick = {
-                        // TODO：
-                        /* Add Tag logic */
-                    }) {
-                        Text("Add Tag")
-                    }
-                }
+//                item {
+//                    TextButton(onClick = {
+//                        buttonColor = if (buttonColor == Color.Gray) Color.Green else Color.Gray
+//                    }) {
+//                        Text("Add Tag")
+//                    }
+//                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            var location by remember { mutableStateOf("Add Location") }
             // 位置信息等其他选项
             Box(
                 modifier = Modifier
@@ -325,19 +350,118 @@ class PostEdit : ComponentActivity() {
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (location == stringResource(R.string.NoLocation)) {
-                    Toast.makeText(LocalContext.current, "Failed to get location", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        LocalContext.current,
+                        "Failed to get location",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     location = "Add Location"
                 }
                 Text(text = location, color = MaterialTheme.colorScheme.primary)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
+fun compressImage(context: Context, uri: Uri, maxSize: Int = 1024 * 1024): MultipartBody.Part? {
+    // 获取文件的 InputStream
+    val contentResolver: ContentResolver = context.contentResolver
+    val inputStream = contentResolver.openInputStream(uri)
 
+    // 确保文件存在且 InputStream 不为 null
+    if (inputStream != null) {
+        // 获取原始图片 Bitmap
+        val bitmap = BitmapFactory.decodeStream(inputStream)
 
+        // 压缩图片
+        val compressedBitmap = compressBitmap(bitmap, maxSize)
 
+        // 将 Bitmap 转换为字节数组
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        compressedBitmap.compress(
+            Bitmap.CompressFormat.JPEG,
+            80,
+            byteArrayOutputStream
+        )  // 压缩成 JPEG 格式
+
+        // 将字节数组转为 RequestBody
+        val requestBody =
+            byteArrayOutputStream.toByteArray().toRequestBody("image/jpeg".toMediaTypeOrNull())
+
+        // 获取文件名
+        val fileName = uri.lastPathSegment ?: "default_name.jpg"
+
+        // 创建 MultipartBody.Part
+        return MultipartBody.Part.createFormData("file", fileName, requestBody)
+    }
+    return null
+}
+
+// 压缩图片，确保图片大小不超过指定大小
+fun compressBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
+    var quality = 100
+    var compressedBitmap = bitmap
+    var stream = ByteArrayOutputStream()
+
+    // 逐步降低图片质量直到满足大小限制
+    do {
+        stream.reset()
+        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+        quality -= 10
+        compressedBitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
+    } while (stream.size() > maxSize && quality > 0)
+
+    return compressedBitmap
+}
+
+@Composable
+fun MyButtonWithProgress() {
+    val context = LocalContext.current
+    var isUploading by remember { mutableStateOf(false) }  // 控制上传中状态
+    val progress = remember { mutableStateOf(0f) }
+    var uploadSuccess by remember { mutableStateOf<Boolean?>(null) }  // 控制上传成功或失败的状态
+    // 当 isUploading 状态变化时，触发 LaunchedEffect
+    LaunchedEffect(isUploading) {
+        if (isUploading) {
+            // 模拟上传过程，更新进度条
+            for (i in 1..100) {
+                progress.value = i / 100f
+                delay(50) // 模拟上传延迟
+            }
+            isUploading = false
+            uploadSuccess = true // 假设上传成功
+        }
+    }
+    // 显示上传进度或结果
+    if (isUploading) {
+        // 上传中，显示进度条
+        LinearProgressIndicator(
+            progress = {
+                progress.value // 设置进度
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        )
+    } else {
+        // 上传完成，显示提示信息
+        uploadSuccess?.let {
+            if (it) {
+                // 上传成功
+                Toast.makeText(
+                    context,
+                    "Upload Successful",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            } else {
+                // 上传失败
+                Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+}
 
 

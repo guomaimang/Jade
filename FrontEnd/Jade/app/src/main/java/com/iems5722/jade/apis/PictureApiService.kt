@@ -36,7 +36,7 @@ interface PictureApiService {
     ): ResultWrapper<Picture>
 
     @DELETE("/picture/delete")
-    fun deletePicture(@Query("pictureId") pictureId: Int): ResultWrapper<Int>
+    suspend fun deletePicture(@Query("pictureId") pictureId: Int): ResultWrapper<Int>
 
     @GET("/picture/get_file")
     suspend fun getPictureFile(

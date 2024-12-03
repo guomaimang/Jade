@@ -251,7 +251,7 @@ fun TopicScreen() {
                 contentDescription = null
             )
         }
-    }else {
+    } else {
         Box(
             // Background layer
             modifier = Modifier
@@ -329,8 +329,8 @@ fun TopicScreen() {
                         },
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.album),
-                            contentDescription = "Album"
+                            painter = painterResource(id = R.drawable.map),
+                            contentDescription = "Map"
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -448,9 +448,10 @@ fun TopicScreen() {
                                                         // 构造 Post 对象列表并更新 postList
                                                         val posts = pictureData.rows?.map { image ->
                                                             // 使用异步请求获取用户信息
-                                                            val userInfo = withContext(Dispatchers.IO) {
-                                                                userApiService.getUserInfo(image.userId)
-                                                            }
+                                                            val userInfo =
+                                                                withContext(Dispatchers.IO) {
+                                                                    userApiService.getUserInfo(image.userId)
+                                                                }
 
                                                             // 防止 userInfo 为 null
                                                             val nickname =
@@ -633,7 +634,7 @@ fun timeToShow(time: String): String {
 }
 
 
-fun openMap(context:Context) {
+fun openMap(context: Context) {
     // TODO: Complete the Map Here!!!!
 
     val topicId = UserPrefs.getSelectedTopic(context)

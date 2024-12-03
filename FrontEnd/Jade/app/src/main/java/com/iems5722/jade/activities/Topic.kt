@@ -1,7 +1,9 @@
 package com.iems5722.jade.activities
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +13,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -43,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberAsyncImagePainter
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
@@ -135,7 +143,7 @@ fun TopicScreen() {
         }
     }
 
-    var selected by remember { mutableStateOf(-1) }
+    var selected by remember { mutableIntStateOf(-1) }
     selected = UserPrefs.getSelectedTopic(context)
     var postList by remember { mutableStateOf(listOf<Post>()) }
 
@@ -189,7 +197,7 @@ fun TopicScreen() {
 
                 withContext(Dispatchers.Main) {
                     postList = posts
-//                    isLoading = false
+                    isLoading = false
                 }
             } else {
                 // 处理图片数据为空的情况
@@ -200,7 +208,7 @@ fun TopicScreen() {
             // 捕获异常并在 UI 上显示错误信息
             Log.e("TopicScreen", "Error: ${e.message}")
 //            errorMessage = "Error: ${e.message}"
-//            isLoading = false
+            isLoading = false
         }
     }
 
@@ -222,13 +230,35 @@ fun TopicScreen() {
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
-    Box(
-        // Background layer
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 48.dp)
-    ) {
-        // TODO: If bg is needed
+
+    if (isLoading) {
+        Box(
+            // Background layer
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 48.dp)
+        ) {
+            Image(
+                modifier = Modifier
+                    .size(128.dp)
+                    .align(Alignment.Center)
+                    .clip(shape = RoundedCornerShape(10.dp)),
+                painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(R.drawable.wait)
+                        .build(),
+                ),
+                contentDescription = null
+            )
+        }
+    }else {
+        Box(
+            // Background layer
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 48.dp)
+        ) {
+            // TODO: If bg is needed
 //        AsyncImage(
 //            model = ImageRequest.Builder(LocalContext.current)
 //                .data(backgroundImgUrl)
@@ -238,260 +268,261 @@ fun TopicScreen() {
 //            contentScale = bgHeight,
 //            modifier = Modifier.fillMaxSize()
 //        )
-        Box(
-            // Header
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
-                .onGloballyPositioned { coordinates ->
-                    headerHeight = coordinates.size.height / 2
-                }
-                .zIndex(1f)
-        ) {
-            Row(
+
+
+            Box(
+                // Header
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Row(
-                    modifier = Modifier.clickable(
-                        onClick = {
-                            // TODO: What to pass for setting?
-
-                            val intent = Intent(context, Setting::class.java)
-                            context.startActivity(intent)
-                        }
-                    )
-                ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(avatar)
-                            .crossfade(true)
-                            .build(),
-                        placeholder = painterResource(R.drawable.placeholder),
-                        contentDescription = "user_img",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(48.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-//                    Text(text = stringResource(R.string.app_name))
-                    if (nickname != null) {
-                        Text(
-                            text = nickname,
-                            style = TextStyle(fontSize = 24.sp),
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
+                    .align(Alignment.TopCenter)
+                    .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
+                    .onGloballyPositioned { coordinates ->
+                        headerHeight = coordinates.size.height / 2
                     }
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    onClick = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageAndVideo
-                            )
-                        )
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.plus),
-                        contentDescription = "Upload"
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
-
-        Box(
-            // Bottom
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
-                .onGloballyPositioned { coordinates ->
-                    bottomHeight = coordinates.size.height / 2
-                }
-                .zIndex(1f)
-        ) {
-            // TODO: Bottom
-            Column {
+                    .zIndex(1f)
+            ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        // TODO: jump to ?
-                        onClick = {
-                            val intent = Intent(context, Topic::class.java)
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.topic),
-                            contentDescription = "Topics"
-                        )
-                    }
                     Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        onClick = {
-                            // TODO: What to deliver?
-                            val intent = Intent(context, ChatRooms::class.java)
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.chatrooms),
-                            contentDescription = "Chatroom"
+                    Row(
+                        modifier = Modifier.clickable(
+                            onClick = {
+                                // TODO: What to pass for setting?
+
+                                val intent = Intent(context, Setting::class.java)
+                                context.startActivity(intent)
+                            }
                         )
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(avatar)
+                                .crossfade(true)
+                                .build(),
+                            placeholder = painterResource(R.drawable.placeholder),
+                            contentDescription = "user_img",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(48.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+//                    Text(text = stringResource(R.string.app_name))
+                        if (nickname != null) {
+                            Text(
+                                text = nickname,
+                                style = TextStyle(fontSize = 24.sp),
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         // TODO: What to bring?
                         onClick = {
-                            val intent = Intent(context, Album::class.java)
-                            context.startActivity(intent)
+                            openMap(context)
                         },
-                        modifier = Modifier.weight(1f)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.album),
                             contentDescription = "Album"
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
             }
-        }
 
-        Box(
-            // Lazy Column
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .align(Alignment.TopCenter)
-                .background(Color.Transparent)
-        ) {
-            Column {
-                // Leave place for header
-                Spacer(modifier = Modifier.height((headerHeight - 16).dp))
+            Box(
+                // Bottom
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(Color(android.graphics.Color.parseColor("#F8FFFFFF")))
+                    .onGloballyPositioned { coordinates ->
+                        bottomHeight = coordinates.size.height / 2
+                    }
+                    .zIndex(1f)
+            ) {
+                // TODO: Bottom
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            // TODO: jump to ?
+                            onClick = {
+                                val intent = Intent(context, Topic::class.java)
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.topic),
+                                contentDescription = "Topics"
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                    )
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.plus),
+                                contentDescription = "Upload"
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = {
+                                // TODO: What to deliver?
+                                val intent = Intent(context, ChatRooms::class.java)
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.chatrooms),
+                                contentDescription = "Chatroom"
+                            )
+                        }
+                    }
+                }
+            }
 
-                // Tag Selection
-                LazyRow {
-                    topics.forEachIndexed { _, topic ->
-                        item {
-                            Column(
-                                modifier = Modifier.clickable(
-                                    onClick = {
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            selected = topic.id
-                                            UserPrefs.setSelectedTopic(
-                                                context,
-                                                selected
-                                            )
-                                            // TODO: Selected tag changed, re-get the postList
-                                            try {
-                                                // 异步请求图片数据
-                                                val response = withContext(Dispatchers.IO) {
-                                                    pictureApiService.getPictures(
-                                                        topicId = selected,
-                                                        pageNum = 1,
-                                                        pageSize = 20
-                                                    )
-                                                }
+            Box(
+                // Lazy Column
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.TopCenter)
+                    .background(Color.Transparent)
+            ) {
+                Column {
+                    // Leave place for header
+                    Spacer(modifier = Modifier.height((headerHeight - 16).dp))
 
-                                                if (response.code == 0 && response.data != null) {
-                                                    val pictureData = response.data
-                                                    val totalPictures = pictureData?.total
-
-                                                    println("Total pictures: $totalPictures")
-
-                                                    // 构造 Post 对象列表并更新 postList
-                                                    val posts = pictureData.rows?.map { image ->
-                                                        // 使用异步请求获取用户信息
-                                                        val userInfo = withContext(Dispatchers.IO) {
-                                                            userApiService.getUserInfo(image.userId)
-                                                        }
-
-                                                        // 防止 userInfo 为 null
-                                                        val nickname =
-                                                            userInfo?.data?.nickname
-                                                                ?: "Unknown User"
-
-                                                        Post(
-                                                            image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
-                                                            title = image.title ?: "No Title",
-                                                            content = image.description
-                                                                ?: "No Description",
-                                                            userAvatar = ImageLinkGenerator.getUserImage(
-                                                                image.userId
-                                                            ),
-                                                            userNickname = nickname,
-                                                            time = image.createTime?.toString()
-                                                                ?: "Unknown Time"
+                    // Tag Selection
+                    LazyRow {
+                        topics.forEachIndexed { _, topic ->
+                            item {
+                                Column(
+                                    modifier = Modifier.clickable(
+                                        onClick = {
+                                            CoroutineScope(Dispatchers.Main).launch {
+                                                selected = topic.id
+                                                UserPrefs.setSelectedTopic(
+                                                    context,
+                                                    selected
+                                                )
+                                                // TODO: Selected tag changed, re-get the postList
+                                                try {
+                                                    // 异步请求图片数据
+                                                    val response = withContext(Dispatchers.IO) {
+                                                        pictureApiService.getPictures(
+                                                            topicId = selected,
+                                                            pageNum = 1,
+                                                            pageSize = 20
                                                         )
-                                                    } ?: emptyList()
+                                                    }
 
-                                                    postList = posts
-                                                } else {
-                                                    // 处理图片数据为空的情况
-                                                    throw Exception("Failed to fetch picture data or data is empty")
+                                                    if (response.code == 0 && response.data != null) {
+                                                        val pictureData = response.data
+                                                        val totalPictures = pictureData?.total
+
+                                                        println("Total pictures: $totalPictures")
+
+                                                        // 构造 Post 对象列表并更新 postList
+                                                        val posts = pictureData.rows?.map { image ->
+                                                            // 使用异步请求获取用户信息
+                                                            val userInfo = withContext(Dispatchers.IO) {
+                                                                userApiService.getUserInfo(image.userId)
+                                                            }
+
+                                                            // 防止 userInfo 为 null
+                                                            val nickname =
+                                                                userInfo?.data?.nickname
+                                                                    ?: "Unknown User"
+
+                                                            Post(
+                                                                image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
+                                                                title = image.title ?: "No Title",
+                                                                content = image.description
+                                                                    ?: "No Description",
+                                                                userAvatar = ImageLinkGenerator.getUserImage(
+                                                                    image.userId
+                                                                ),
+                                                                userNickname = nickname,
+                                                                time = image.createTime?.toString()
+                                                                    ?: "Unknown Time"
+                                                            )
+                                                        } ?: emptyList()
+
+                                                        postList = posts
+                                                    } else {
+                                                        // 处理图片数据为空的情况
+                                                        throw Exception("Failed to fetch picture data or data is empty")
+                                                    }
+
+                                                } catch (e: Exception) {
+                                                    // 捕获异常并在 UI 上显示错误信息
+                                                    Log.e("TopicScreen", "Error: ${e.message}")
                                                 }
-
-                                            } catch (e: Exception) {
-                                                // 捕获异常并在 UI 上显示错误信息
-                                                Log.e("TopicScreen", "Error: ${e.message}")
                                             }
                                         }
+                                    )
+                                ) {
+                                    if (selected == topic.id) {
+                                        Text(
+                                            text = topic.tag,
+                                            style = TextStyle(color = Color.Black)
+                                        )
+                                    } else {
+                                        Text(
+                                            text = topic.tag,
+                                            style = TextStyle(color = Color.Gray)
+                                        )
                                     }
-                                )
-                            ) {
-                                if (selected == topic.id) {
-                                    Text(
-                                        text = topic.tag,
-                                        style = TextStyle(color = Color.Black)
-                                    )
-                                } else {
-                                    Text(
-                                        text = topic.tag,
-                                        style = TextStyle(color = Color.Gray)
-                                    )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
-
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                // TODO: LazyColumn
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // TODO: LazyColumn
 
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(2),
-                    verticalItemSpacing = 8.dp,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
-                ) {
-                    postList.forEachIndexed { _, postItem ->
-                        item {
-                            PostItemShow(postItem, jwt)
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Fixed(2),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
+                    ) {
+                        postList.forEachIndexed { _, postItem ->
+                            item {
+                                PostItemShow(postItem, jwt)
+                            }
                         }
                     }
-                }
 
 
-                // Usage of Image(From Web)
+                    // Usage of Image(From Web)
 //                AsyncImage(
 //                    model = ImageRequest.Builder(LocalContext.current)
 //                        .data(self_fig)
@@ -505,6 +536,7 @@ fun TopicScreen() {
 //                        .size(48.dp),
 //                )
 //                Text(text = "Topic")
+                }
             }
         }
     }
@@ -598,6 +630,23 @@ fun timeToShow(time: String): String {
     timeReturn = timeParts.take(3).joinToString(" ")
 
     return timeReturn
+}
+
+
+fun openMap(context:Context) {
+    // TODO: Complete the Map Here!!!!
+
+    val topicId = UserPrefs.getSelectedTopic(context)
+
+    val url = "https://jade.dev.hirsun.tech/map.html?topicId=$topicId"
+
+    val customTabsIntent = CustomTabsIntent.Builder().apply {
+        // 设置自定义的工具栏颜色
+        setToolbarColor(Color(0xFF6200EE).toArgb())  // 例如紫色
+    }.build()
+
+    // 点击时打开 Custom Tab
+    customTabsIntent.launchUrl(context, Uri.parse(url))
 }
 
 //@Preview(showBackground = true)

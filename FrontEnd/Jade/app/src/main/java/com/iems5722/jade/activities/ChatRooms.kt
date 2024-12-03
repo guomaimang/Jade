@@ -8,6 +8,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,6 +57,7 @@ import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.ImageLinkGenerator
+import com.iems5722.jade.utils.ImageUploadHelper
 import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
 import kotlinx.coroutines.Dispatchers
@@ -76,6 +79,7 @@ class ChatRooms : ComponentActivity() {
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 fun chatRoomsScreen() {
 
@@ -117,6 +121,11 @@ fun chatRoomsScreen() {
             Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
         }
     }
+
+    val imageUploadHelper = ImageUploadHelper()
+    val photoPickerLauncher = imageUploadHelper.setupMediaPicker(
+        context = context,
+    )
 
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
@@ -190,7 +199,16 @@ fun chatRoomsScreen() {
                 }
                 Spacer(modifier = Modifier.weight(1f))
 
-
+                IconButton(
+                    onClick = {
+                        openMap(context)
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.album),
+                        contentDescription = "Album"
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -231,6 +249,22 @@ fun chatRoomsScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                )
+                            )
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.plus),
+                            contentDescription = "Upload"
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = {
                             // TODO: What to deliver?
                             val intent = Intent(context, ChatRooms::class.java)
                             context.startActivity(intent)
@@ -240,20 +274,6 @@ fun chatRoomsScreen() {
                         Icon(
                             painter = painterResource(id = R.drawable.chatrooms),
                             contentDescription = "Chatroom"
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        // TODO: What to bring?
-                        onClick = {
-                            val intent = Intent(context, Album::class.java)
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.album),
-                            contentDescription = "Album"
                         )
                     }
                 }

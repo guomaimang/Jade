@@ -95,7 +95,7 @@
                 // Fetch the image with JWT token
                 fetch(`/picture/get_file?file_name=${marker.fileName}&user_id=${marker.userId}&resolution=thumbnail`, {
                     headers: {
-                        'jwt': jwtToken
+                        // 'jwt': jwtToken
                     }
                 })
                     .then(response => response.blob())
@@ -130,16 +130,16 @@
         zoom: 2
     });
 
-    let jwtToken = null;
+    // let jwtToken = null;
 
     function loadMap(jwt){
 
-        jwtToken = jwt;
+        // jwtToken = jwt;
 
         // Fetch the data from the API with JWT token in the header
         fetch(`/picture/list?topicId=${topic}&pageNum=1&pageSize=100`, {
             headers: {
-                'jwt': jwtToken
+                // 'jwt': jwtToken
             }
         })
             .then(response => response.json())
@@ -162,7 +162,7 @@
         // Fetch the full resolution image
         fetch(`/picture/get_file?file_name=${fileName}&user_id=${userId}&resolution=picture`, {
             headers: {
-                'jwt': jwtToken
+                // 'jwt': jwtToken
             }
         })
             .then(response => response.blob())
@@ -182,6 +182,8 @@
         const modal = document.getElementById("myModal");
         modal.style.display = "none";
     }
+
+    loadMap("1");
 
 </script>
 

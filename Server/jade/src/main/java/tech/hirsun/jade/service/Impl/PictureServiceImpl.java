@@ -167,6 +167,11 @@ public class PictureServiceImpl implements PictureService {
         return 0;
     }
 
+    @Override
+    public List getUserPictures(int loggedInUserId, Integer pageNum, Integer pageSize) {
+        return pictureDao.list(null, loggedInUserId, (pageNum - 1) * pageSize, pageSize);
+    }
+
     public String convertCoordinateToAddress(String latitude, String longitude) {
         if (apiKey == null) {
             log.error("API key is not available");

@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns("/demo/proc/**")
                 .addPathPatterns("/userauth/refreshtoken")
-                .addPathPatterns("/picture/**")
+//                .addPathPatterns("/picture/**")
                 .addPathPatterns("/message/**")
                 .addPathPatterns("/user/**")
                 .order(0);

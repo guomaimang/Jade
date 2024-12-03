@@ -148,6 +148,15 @@ public class PictureController {
         return Result.success(pictureService.getInfo(pictureId));
     }
 
+    @GetMapping("/myself")
+    private Result getMyselfPictures(@RequestHeader String jwt,
+                                     @RequestParam(defaultValue = "1") Integer pageNum,
+                                     @RequestParam(defaultValue = "20") Integer pageSize) {
+        int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
+        log.info("Request pictures by user id: {}, pageNum: {}, pageSize: {}", loggedInUserId, pageNum, pageSize);
+        return Result.success(pictureService.getUserPictures(loggedInUserId, pageNum, pageSize));
+    }
+
 
     private long parseSize(String size) {
         size = size.toUpperCase();

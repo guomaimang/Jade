@@ -6,6 +6,7 @@ import tech.hirsun.jade.pojo.PageBean;
 import tech.hirsun.jade.pojo.Picture;
 
 import java.net.MalformedURLException;
+import java.util.List;
 
 public interface PictureService {
     PageBean getTopicPictures(Integer topicId, Integer pageNum, Integer pageSize);
@@ -17,4 +18,6 @@ public interface PictureService {
     Picture postPicture(MultipartFile file, Picture picture, Integer userId) throws Exception;
 
     Integer deletePicture(Integer pictureId);
+
+    List getUserPictures(int loggedInUserId, Integer pageNum, Integer pageSize);
 }

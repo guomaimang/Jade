@@ -85,6 +85,14 @@ class Detail : ComponentActivity() {
     }
 }
 
+data class ExtraInfo(
+    val exifSize: String,
+    val exifTime: String,
+    val exifLatitude: String,
+    val exifLongitude: String,
+    val exifLocation: String,
+    val exifDevice: String
+)
 
 @Composable
 fun DetailScreen(
@@ -101,6 +109,22 @@ fun DetailScreen(
     val jwt = UserPrefs.getJwt(context).toString()
 
     // TODO: Get extra information
+
+    val testExifSize = "1"
+    val testExifTime = "2"
+    val testExifLatitude = "3"
+    val testExifLongitude = "4"
+    val testExifLocation = "5"
+    val testExifDevice = "6"
+
+    val picInfo = ExtraInfo(
+        testExifSize,
+        testExifTime,
+        testExifLatitude,
+        testExifLongitude,
+        testExifLocation,
+        testExifDevice
+    )
 
     val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)
@@ -246,23 +270,22 @@ fun DetailScreen(
                         }
                     }
                 }
-                item { AdvancedInfo() }
+
+                item { AdvancedInfo(picInfo) }
                 // item { PostDivider() }
 
-                item {
-                    // TODO: Copy your chatroom
-                }
+//                item {
+//                    // TODO: Copy your chatroom
+//                }
 
                 item { Spacer(modifier = Modifier.height(bottomHeight.dp)) }
             }
-
-
         }
     }
 }
 
 @Composable
-fun AdvancedInfo() {
+fun AdvancedInfo(extraInfo: ExtraInfo) {
     var needToShow by remember { mutableStateOf(false) }
     Text(
         text = stringResource(R.string.AdvanceInformation),
@@ -273,6 +296,26 @@ fun AdvancedInfo() {
     )
 
     if (needToShow) {
+        Text(
+            text = "Size: ${extraInfo.exifSize}",
+            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        )
+        Text(
+            text = "Time: ${extraInfo.exifTime}",
+            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        )
+        Text(
+            text = "Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
+            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        )
+        Text(
+            text = "Location: ${extraInfo.exifLocation}",
+            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        )
+        Text(
+            text = "Device: ${extraInfo.exifDevice}",
+            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+        )
         Text(
             text = stringResource(R.string.HideInformation),
             style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 16.sp),

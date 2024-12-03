@@ -9,4 +9,7 @@
     <string name="AdvanceInformation">Advance Information</string>
     <string name="HideInformation">Click to hide</string>
     <string name="CommitArea">Sharing Space</string>
+    <string name="NoLocation">(0.0,0.0)</string>
+    <string name="UploadTitle">Post Title</string>
+    <string name="UploadContent">Description</string>
 </resources>

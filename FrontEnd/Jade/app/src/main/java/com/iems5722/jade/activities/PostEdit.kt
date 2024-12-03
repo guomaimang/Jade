@@ -1,10 +1,15 @@
 package com.iems5722.jade.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
+import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -46,19 +51,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import coil3.compose.rememberAsyncImagePainter
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.MyLocationListener
 
 @Suppress("DEPRECATION")
 class PostEdit : ComponentActivity() {
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        requestLocationPermission()
 
         // 从 Intent 中获取选中的图片 URI 列表
         val selectedImages = intent.getParcelableArrayListExtra<Uri>("selected_images")
@@ -79,15 +91,24 @@ class PostEdit : ComponentActivity() {
             }
         }
     }
+
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+    }
 }
 
+@SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostEditScreen(selectedImages: List<Uri>) {
-    var context = LocalContext.current
+    val context = LocalContext.current
+
+    var locationListener: MyLocationListener = MyLocationListener(LocalContext.current)
+
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     val tags = remember { mutableStateListOf<String>() }
+
 
     Column(
         modifier = Modifier
@@ -109,8 +130,9 @@ fun PostEditScreen(selectedImages: List<Uri>) {
                 }
             },
             actions = {
-                TextButton(onClick = {
-//                    CoroutineScope(Dispatchers.Main)
+                IconButton(
+                    onClick = {
+                        //                    CoroutineScope(Dispatchers.Main)
 //                        .launch {
 //                            selected = topic.id
 //                            UserPrefs.setSelectedTopic(
@@ -175,9 +197,18 @@ fun PostEditScreen(selectedImages: List<Uri>) {
 //                                Log.e("TopicScreen", "Error: ${e.message}")
 //                            }
 //                        }
-                }) {
-                    Text("Publish", color = MaterialTheme.colorScheme.primary)
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.upload),
+                        contentDescription = "upload"
+                    )
                 }
+//                TextButton(onClick = {
+//
+//                }) {
+//                    Text("Publish", color = MaterialTheme.colorScheme.primary)
+//                }
             }
         )
 
@@ -203,14 +234,17 @@ fun PostEditScreen(selectedImages: List<Uri>) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 标题输入框
+        Text(
+            text = stringResource(R.string.UploadTitle),
+            modifier = Modifier.padding(16.dp,0.dp)
+        )
         BasicTextField(
             value = title,
             onValueChange = { title = it },
             textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp,0.dp),
             decorationBox = { innerTextField ->
                 if (title.isEmpty()) {
                     Text("Add Title", color = Color.Gray)
@@ -222,6 +256,9 @@ fun PostEditScreen(selectedImages: List<Uri>) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text(text = stringResource(R.string.UploadContent),
+            modifier = Modifier.padding(16.dp,0.dp)
+        )
         // 正文输入框
         BasicTextField(
             value = content,
@@ -229,7 +266,7 @@ fun PostEditScreen(selectedImages: List<Uri>) {
             textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp,0.dp)
                 .height(200.dp),
             decorationBox = { innerTextField ->
                 if (content.isEmpty()) {
@@ -243,39 +280,58 @@ fun PostEditScreen(selectedImages: List<Uri>) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // 标签添加区域
-        Row(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
-                Box(
-                    modifier = Modifier
-                        .background(Color.LightGray, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    Text("#$tag", color = Color.Black)
+                item {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.LightGray, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Text("#$tag", color = Color.Black)
+                    }
                 }
             }
-            TextButton(onClick = { /* Add Tag logic */ }) {
-                Text("Add Tag")
+            item {
+                TextButton(onClick = {
+                    // TODO：
+                    /* Add Tag logic */
+                }) {
+                    Text("Add Tag")
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        var location by remember { mutableStateOf("Add Location") }
         // 位置信息等其他选项
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .clickable { /* Location action */ },
+                .clickable {
+                    locationListener.updateLocation()
+                    location = locationListener.getLocationString()
+                },
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(text = "Add Location", color = MaterialTheme.colorScheme.primary)
+            if (location == stringResource(R.string.NoLocation)) {
+                Toast.makeText(LocalContext.current, "Failed to get location", Toast.LENGTH_SHORT).show()
+                location = "Add Location"
+            }
+            Text(text = location, color = MaterialTheme.colorScheme.primary)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+
+
+

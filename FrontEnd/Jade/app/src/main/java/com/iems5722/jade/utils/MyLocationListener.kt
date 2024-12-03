@@ -5,6 +5,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 
 class MyLocationListener(context: Context) : LocationListener {
     private val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -26,6 +27,7 @@ class MyLocationListener(context: Context) : LocationListener {
         } catch (ex: SecurityException) {
             // Handle exception
         }
+        Log.e("UPDATE", "UPDATE LOCATION")
     }
 
     override fun onLocationChanged(location: Location) {

@@ -61,10 +61,14 @@ import coil3.compose.rememberAsyncImagePainter
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.MyLocationListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Suppress("DEPRECATION")
 class PostEdit : ComponentActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    private lateinit var locationListener: MyLocationListener
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,44 +99,43 @@ class PostEdit : ComponentActivity() {
     private fun requestLocationPermission() {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
     }
-}
 
-@SuppressLint("MissingPermission")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PostEditScreen(selectedImages: List<Uri>) {
-    val context = LocalContext.current
+    @SuppressLint("MissingPermission")
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun PostEditScreen(selectedImages: List<Uri>) {
+        val context = LocalContext.current
+        locationListener = MyLocationListener(this)
+        // var locationListener: MyLocationListener = MyLocationListener(LocalContext.current)
 
-    var locationListener: MyLocationListener = MyLocationListener(LocalContext.current)
-
-    var title by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
-    val tags = remember { mutableStateListOf<String>() }
+        var title by remember { mutableStateOf("") }
+        var content by remember { mutableStateOf("") }
+        val tags = remember { mutableStateListOf<String>() }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // 顶部导航栏
-        TopAppBar(
-            title = { Text("Edit Post") },
-            navigationIcon = {
-                IconButton(onClick = {
-                    val activity = context as? Activity
-                    activity?.finish()
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = "Back"
-                    )
-                }
-            },
-            actions = {
-                IconButton(
-                    onClick = {
-                        //                    CoroutineScope(Dispatchers.Main)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            // 顶部导航栏
+            TopAppBar(
+                title = { Text("Edit Post") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        val activity = context as? Activity
+                        activity?.finish()
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            //                    CoroutineScope(Dispatchers.Main)
 //                        .launch {
 //                            selected = topic.id
 //                            UserPrefs.setSelectedTopic(
@@ -197,140 +200,143 @@ fun PostEditScreen(selectedImages: List<Uri>) {
 //                                Log.e("TopicScreen", "Error: ${e.message}")
 //                            }
 //                        }
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.upload),
-                        contentDescription = "upload"
-                    )
-                }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.upload),
+                            contentDescription = "upload"
+                        )
+                    }
 //                TextButton(onClick = {
 //
 //                }) {
 //                    Text("Publish", color = MaterialTheme.colorScheme.primary)
 //                }
-            }
-        )
-
-        // 图片展示区域
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(selectedImages) { uri ->
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { /* Image click action */ },
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = stringResource(R.string.UploadTitle),
-            modifier = Modifier.padding(16.dp,0.dp)
-        )
-        BasicTextField(
-            value = title,
-            onValueChange = { title = it },
-            textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp,0.dp),
-            decorationBox = { innerTextField ->
-                if (title.isEmpty()) {
-                    Text("Add Title", color = Color.Gray)
                 }
-                innerTextField()
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
-        )
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = stringResource(R.string.UploadContent),
-            modifier = Modifier.padding(16.dp,0.dp)
-        )
-        // 正文输入框
-        BasicTextField(
-            value = content,
-            onValueChange = { content = it },
-            textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp,0.dp)
-                .height(200.dp),
-            decorationBox = { innerTextField ->
-                if (content.isEmpty()) {
-                    Text("Share your thoughts...", color = Color.Gray)
-                }
-                innerTextField()
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 标签添加区域
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            tags.forEach { tag ->
-                item {
-                    Box(
+            // 图片展示区域
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(selectedImages) { uri ->
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = null,
                         modifier = Modifier
-                            .background(Color.LightGray, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Text("#$tag", color = Color.Black)
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { /* Image click action */ },
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.UploadTitle),
+                modifier = Modifier.padding(16.dp,0.dp)
+            )
+            BasicTextField(
+                value = title,
+                onValueChange = { title = it },
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp,0.dp),
+                decorationBox = { innerTextField ->
+                    if (title.isEmpty()) {
+                        Text("Add Title", color = Color.Gray)
+                    }
+                    innerTextField()
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = stringResource(R.string.UploadContent),
+                modifier = Modifier.padding(16.dp,0.dp)
+            )
+            // 正文输入框
+            BasicTextField(
+                value = content,
+                onValueChange = { content = it },
+                textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp,0.dp)
+                    .height(200.dp),
+                decorationBox = { innerTextField ->
+                    if (content.isEmpty()) {
+                        Text("Share your thoughts...", color = Color.Gray)
+                    }
+                    innerTextField()
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 标签添加区域
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                tags.forEach { tag ->
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .background(Color.LightGray, RoundedCornerShape(16.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Text("#$tag", color = Color.Black)
+                        }
+                    }
+                }
+                item {
+                    TextButton(onClick = {
+                        // TODO：
+                        /* Add Tag logic */
+                    }) {
+                        Text("Add Tag")
                     }
                 }
             }
-            item {
-                TextButton(onClick = {
-                    // TODO：
-                    /* Add Tag logic */
-                }) {
-                    Text("Add Tag")
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            var location by remember { mutableStateOf("Add Location") }
+            // 位置信息等其他选项
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable {
+                        locationListener.updateLocation()
+                        location = locationListener.getLocationString()
+                    },
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (location == stringResource(R.string.NoLocation)) {
+                    Toast.makeText(LocalContext.current, "Failed to get location", Toast.LENGTH_SHORT).show()
+                    location = "Add Location"
                 }
+                Text(text = location, color = MaterialTheme.colorScheme.primary)
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        var location by remember { mutableStateOf("Add Location") }
-        // 位置信息等其他选项
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    locationListener.updateLocation()
-                    location = locationListener.getLocationString()
-                },
-            contentAlignment = Alignment.CenterStart
-        ) {
-            if (location == stringResource(R.string.NoLocation)) {
-                Toast.makeText(LocalContext.current, "Failed to get location", Toast.LENGTH_SHORT).show()
-                location = "Add Location"
-            }
-            Text(text = location, color = MaterialTheme.colorScheme.primary)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+
 
 
 

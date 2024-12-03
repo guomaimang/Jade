@@ -200,9 +200,7 @@ fun DetailScreen(
                 IconButton(
                     // TODO: Brings what?
                     onClick = {
-
-                        val intent = Intent(context, Album::class.java)
-                        context.startActivity(intent)
+                        openMap(context)
                     },
                 ) {
                     Icon(
@@ -249,7 +247,7 @@ fun DetailScreen(
                     }
                 }
                 item { AdvancedInfo() }
-                item { PostDivider() }
+                // item { PostDivider() }
 
                 item {
                     // TODO: Copy your chatroom

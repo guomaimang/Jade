@@ -326,43 +326,49 @@ fun SingleChatroomShow(chatroom: Chatroom) {
                 .align(Alignment.CenterVertically)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterVertically),
-        ) {
-            Text(
-                text = chatroom.chatroomName,
-                style = TextStyle(fontSize = 20.sp)
-            )
-            Text(
-                text = chatroom.latestMessage,
-                style = TextStyle(color = Color.Gray, fontSize = 10.sp)
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterVertically),
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = chatroom.latestMessageTime,
-                style = TextStyle(fontSize = 10.sp)
-            )
-            val flag = (chatroom.unRead == 0)
-            if (flag) {
-                Text(
-                    text = "${chatroom.unRead}",
-                    style = TextStyle(color = Color.Gray)
-                )
-            } else {
-                Text(
-                    text = "${chatroom.unRead}",
-                    style = TextStyle(color = Color.Red)
-                )
-            }
+        // TODO: temporary use
+        Text(
+            text = chatroom.chatroomName,
+            style = TextStyle(fontSize = 20.sp),
+            modifier = Modifier.align(Alignment.CenterVertically),
+        )
 
-        }
+//        Column(
+//            modifier = Modifier
+//                .align(Alignment.CenterVertically),
+//        ) {
+//            Text(
+//                text = chatroom.chatroomName,
+//                style = TextStyle(fontSize = 20.sp)
+//            )
+//            Text(
+//                text = chatroom.latestMessage,
+//                style = TextStyle(color = Color.Gray, fontSize = 10.sp)
+//            )
+//        }
+//        Spacer(modifier = Modifier.weight(1f))
+//        Column(
+//            modifier = Modifier
+//                .align(Alignment.CenterVertically),
+//            horizontalAlignment = Alignment.End
+//        ) {
+//            Text(
+//                text = chatroom.latestMessageTime,
+//                style = TextStyle(fontSize = 10.sp)
+//            )
+//            val flag = (chatroom.unRead == 0)
+//            if (flag) {
+//                Text(
+//                    text = "${chatroom.unRead}",
+//                    style = TextStyle(color = Color.Gray)
+//                )
+//            } else {
+//                Text(
+//                    text = "${chatroom.unRead}",
+//                    style = TextStyle(color = Color.Red)
+//                )
+//            }
+//        }
         Spacer(modifier = Modifier.width(8.dp))
     }
 }

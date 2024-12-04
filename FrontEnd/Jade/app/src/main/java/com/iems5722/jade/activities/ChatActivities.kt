@@ -285,7 +285,7 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
                             .weight(1f)
                             .padding(8.dp),
                         placeholder = { Text("Enter your message...") },
-                        shape = MaterialTheme.shapes.medium,
+                        shape = MaterialTheme.shapes.extraLarge,
                     )
                     IconButton(onClick = {
                         if (messageText.text.isNotEmpty()) {

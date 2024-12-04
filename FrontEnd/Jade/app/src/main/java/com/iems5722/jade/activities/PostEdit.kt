@@ -68,10 +68,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.File
 import java.io.InputStream
 
 @Suppress("DEPRECATION")
@@ -134,17 +132,15 @@ class PostEdit : ComponentActivity() {
         val topicApiService = RetrofitInstance(jwt).topicApiService()
         LaunchedEffect(true) {
             try {
-                val response =
-                    withContext(Dispatchers.IO) {
-                        topicApiService.getTopics()
-                    }
+                val response = withContext(Dispatchers.IO) {
+                    topicApiService.getTopics()
+                }
 
                 if (response.code == 0 && response.data != null) {
                     val topicsTemp = response.data
                     val topicsList = topicsTemp.map { topic ->
                         Topics(
-                            id = topic.id,
-                            tag = topic.tag
+                            id = topic.id, tag = topic.tag
                         )
                     }
 
@@ -164,93 +160,76 @@ class PostEdit : ComponentActivity() {
                 .fillMaxSize()
                 .background(Color.White)
         ) {
-            TopAppBar(
-                title = { Text("Edit Post") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        val activity = context as? Activity
-                        activity?.finish()
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.back),
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                try {
-                                    // 解析 location 字符串
-                                    val coordinates =
-                                        location.trim('(', ')').split(",")
-                                    val coordinateX = coordinates[0]
-                                    val coordinateY = coordinates[1]
-
-                                    val jsonObject = JSONObject()
-                                    jsonObject.put("title", title)
-                                    jsonObject.put("description", content)
-                                    jsonObject.put("topicId", tag)
-                                    jsonObject.put("coordinateX", coordinateX)
-                                    jsonObject.put("coordinateY", coordinateY)
-                                    val jsonString = jsonObject.toString()
-                                    println("jsonString: $jsonString")
-
-                                    val file = File(selectedImages[0].path) // 获取文件路径
-                                    val fileRequestBody =
-                                        file.asRequestBody("image/*".toMediaTypeOrNull()) // 文件内容的 RequestBody
-                                    val fileParam = MultipartBody.Part.createFormData(
-                                        "file",
-                                        file.name,
-                                        fileRequestBody
-                                    )
-
-                                    val response =
-                                        withContext(Dispatchers.IO) {
-                                            fileParam?.let {
-                                                pictureApiService.uploadPicture(
-                                                    picture = jsonString,
-                                                    file = it
-                                                )
-                                            }
-                                        }
-
-                                    if (response != null) {
-                                        if (response.code == 0 && response.data != null) {
-                                            withContext(Dispatchers.Main) {
-                                                // 上传成功
-                                                Toast.makeText(
-                                                    context,
-                                                    "Upload Successful",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        } else {
-                                            throw Exception("Failed to fetch picture data or data is empty")
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    withContext(Dispatchers.Main) {
-                                        // 上传成功
-                                        Toast.makeText(
-                                            context,
-                                            "Error: ${e.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    Log.e("TopicScreen", "Error: ${e.message}")
-                                }
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.upload),
-                            contentDescription = "upload"
-                        )
-                    }
+            TopAppBar(title = { Text("Edit Post") }, navigationIcon = {
+                IconButton(onClick = {
+                    val activity = context as? Activity
+                    activity?.finish()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Back"
+                    )
                 }
-            )
+            }, actions = {
+                IconButton(
+                    onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            try {
+                                // 解析 location 字符串
+                                val coordinates = location.trim('(', ')').split(",")
+                                val coordinateX = coordinates[0]
+                                val coordinateY = coordinates[1]
+
+                                val jsonObject = JSONObject()
+                                jsonObject.put("title", title)
+                                jsonObject.put("description", content)
+                                jsonObject.put("topicId", tag)
+                                jsonObject.put("coordinateX", coordinateX)
+                                jsonObject.put("coordinateY", coordinateY)
+                                val jsonString = jsonObject.toString()
+                                println("jsonString: $jsonString")
+
+
+                                val fileParam = createMultipartBodyPart(context, selectedImages[0])
+
+                                val response = withContext(Dispatchers.IO) {
+                                    fileParam?.let {
+                                        pictureApiService.uploadPicture(
+                                            picture = jsonString, file = it
+                                        )
+                                    }
+                                }
+
+                                if (response != null) {
+                                    if (response.code == 0 && response.data != null) {
+                                        withContext(Dispatchers.Main) {
+                                            // 上传成功
+                                            Toast.makeText(
+                                                context, "Upload Successful", Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    } else {
+                                        throw Exception("Failed to fetch picture data or data is empty")
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    // 上传成功
+                                    Toast.makeText(
+                                        context, "Error: ${e.message}", Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                Log.e("TopicScreen", "Error: ${e.message}")
+                            }
+                        }
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.upload),
+                        contentDescription = "upload"
+                    )
+                }
+            })
             // 图片展示区域
             LazyRow(
                 modifier = Modifier
@@ -329,15 +308,13 @@ class PostEdit : ComponentActivity() {
                 topics.forEach { topic ->
                     item {
                         val tagColor = if (tag == topic.id) Color.Cyan else Color.LightGray
-                        Box(
-                            modifier = Modifier
-                                .background(tagColor, RoundedCornerShape(16.dp))
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                                .clickable {
-                                    // 点击标签时更新tag的值为当前topic.id
-                                    tag = topic.id
-                                }
-                        ) {
+                        Box(modifier = Modifier
+                            .background(tagColor, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .clickable {
+                                // 点击标签时更新tag的值为当前topic.id
+                                tag = topic.id
+                            }) {
                             Text("#${topic.tag}", color = Color.Black)
                         }
                     }
@@ -361,14 +338,11 @@ class PostEdit : ComponentActivity() {
                     .clickable {
                         locationListener.updateLocation()
                         location = locationListener.getLocationString()
-                    },
-                contentAlignment = Alignment.CenterStart
+                    }, contentAlignment = Alignment.CenterStart
             ) {
                 if (location == stringResource(R.string.NoLocation)) {
                     Toast.makeText(
-                        LocalContext.current,
-                        "Failed to get location",
-                        Toast.LENGTH_SHORT
+                        LocalContext.current, "Failed to get location", Toast.LENGTH_SHORT
                     ).show()
                     location = "Add Location"
                 }
@@ -437,15 +411,11 @@ fun MyButtonWithProgress() {
             if (it) {
                 // 上传成功
                 Toast.makeText(
-                    context,
-                    "Upload Successful",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
+                    context, "Upload Successful", Toast.LENGTH_SHORT
+                ).show()
             } else {
                 // 上传失败
-                Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
             }
         }
     }

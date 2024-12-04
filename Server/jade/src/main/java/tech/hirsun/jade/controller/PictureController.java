@@ -57,6 +57,8 @@ public class PictureController {
                                  @RequestParam String picture) throws Exception {
         int loggedInUserId = Integer.parseInt(JwtUtils.parseJwt(jwt).get("id").toString());
 
+        log.info("picture: {}", picture);
+
         if (file.isEmpty()) {
             throw new BadRequestException("File is empty", ErrorCode.UPLOAD_FILE_ERROR);
         }

@@ -107,10 +107,9 @@ fun DetailScreen(
     pictures: MutableList<String>,
 ) {
     // TODO: Get Pictures
+    // TODO: Get Post Title and content
 
     val context = LocalContext.current
-
-    // TODO: Get Post Title and content
 
     val jwt = UserPrefs.getJwt(context).toString()
 
@@ -121,14 +120,14 @@ fun DetailScreen(
     val testExifLocation = ""
     val testExifDevice = ""
 
-    var picInfo = ExtraInfo(
+    var picInfo by remember { mutableStateOf(ExtraInfo(
         testExifSize,
         testExifTime,
         testExifLatitude,
         testExifLongitude,
         testExifLocation,
         testExifDevice
-    )
+    )) }
 
     val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)

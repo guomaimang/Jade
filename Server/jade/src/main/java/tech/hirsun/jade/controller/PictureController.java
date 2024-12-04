@@ -46,7 +46,6 @@ public class PictureController {
         return Result.success(pictureService.getTopicPictures(topicId, pageNum, pageSize));
     }
 
-
     /**
      * upload picture
      * @param file: file object
@@ -73,11 +72,6 @@ public class PictureController {
         String contentType = file.getContentType();
         if (!isSupportedContentType(contentType)) {
             throw new BadRequestException("Unsupported file type", ErrorCode.UPLOAD_FILE_TYPE_ERROR);
-        }
-
-        String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic|JPG|JPEG|PNG|HEIC)$")) {
-            throw new BadRequestException("Invalid file extension", ErrorCode.UPLOAD_FILE_TYPE_ERROR);
         }
 
         return Result.success(pictureService.postPicture(file, StringAndBeanConventer.stringToBean(picture, Picture.class), loggedInUserId));

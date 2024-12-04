@@ -113,9 +113,8 @@ public class PictureServiceImpl implements PictureService {
         picture.setExifLocation(null);
 
         // Generate UUID file name
-        String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
         String uuid = UUID.randomUUID().toString();
-        String fileName = uuid + "." + fileExtension;
+        String fileName = uuid + ".jpg";
 
         // For Picture: Create directories if they do not exist
         Path userDir = Paths.get(picturesPath, "picture" , userId.toString());

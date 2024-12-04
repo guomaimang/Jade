@@ -184,6 +184,7 @@ class PostEdit : ComponentActivity() {
                                 jsonObject.put("title", title)
                                 jsonObject.put("description", content)
                                 jsonObject.put("topicId", tag)
+                                jsonObject.put("userId", UserPrefs.getUserId(context)?.toInt() ?: 1)
                                 jsonObject.put("coordinateX", coordinateX)
                                 jsonObject.put("coordinateY", coordinateY)
                                 val jsonString = jsonObject.toString()

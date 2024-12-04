@@ -1,6 +1,5 @@
 package com.iems5722.jade.apis
 
-import com.iems5722.jade.model.PageBean
 import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Message
 import retrofit2.http.Body
@@ -14,7 +13,7 @@ interface MessageApiService {
     suspend fun getMessagesByTopicId(
         @Query("topicId") topicId: Int,
         @Query("startTime") startTime: Long? = null
-    ): ResultWrapper<PageBean<Message>>
+    ): ResultWrapper<List<Message>>
 
     @POST("/message/post")
     suspend fun postMessage(@Body message: Message): ResultWrapper<Void>

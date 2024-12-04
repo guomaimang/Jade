@@ -139,7 +139,7 @@ fun TopicScreen() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("ChatActivity", "Error loading messages: ${e.localizedMessage}")
+            Log.e("Topics", "Error loading topics: ${e.localizedMessage}")
         }
     }
 
@@ -211,17 +211,6 @@ fun TopicScreen() {
             isLoading = false
         }
     }
-
-    // 显示 UI
-//    if (isLoading) {
-//        // 显示加载中状态
-//        CircularProgressIndicator(context)
-//    } else {
-//        // 如果有错误显示错误信息
-//        errorMessage?.let {
-//            Text(text = it, color = Color.Red)
-//        }
-//    }
 
     // TODO: Get user name and user image
     val nickname = UserPrefs.getNickname(context)

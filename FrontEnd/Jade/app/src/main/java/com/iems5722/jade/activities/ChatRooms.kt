@@ -205,8 +205,8 @@ fun chatRoomsScreen() {
                     },
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.album),
-                        contentDescription = "Album"
+                        painter = painterResource(id = R.drawable.map),
+                        contentDescription = "Map"
                     )
                 }
 
@@ -315,11 +315,10 @@ fun SingleChatroomShow(chatroom: Chatroom) {
     Row(
         modifier = Modifier.clickable(
             onClick = {
-                // TODO: What to bring?
-
                 val intent = Intent(context, ChatActivities::class.java)
-                intent.putExtra("name", chatroom.chatroomName)
-                intent.putExtra("id", chatroom.chatroomId)
+                intent.putExtra("avatar", chatroom.chatroomAvatar)
+                intent.putExtra("topic_name", chatroom.chatroomName)
+                intent.putExtra("topic_id", chatroom.chatroomId)
                 context.startActivity(intent)
             }
         )

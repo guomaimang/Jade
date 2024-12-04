@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -70,9 +68,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
 
 @Suppress("DEPRECATION")
 class PostEdit : ComponentActivity() {
@@ -195,12 +195,17 @@ class PostEdit : ComponentActivity() {
                                     jsonObject.put("coordinateX", coordinateX)
                                     jsonObject.put("coordinateY", coordinateY)
                                     val jsonString = jsonObject.toString()
+                                    println("jsonString: $jsonString")
 
-                                    // 创建文件参数
-                                    val fileParam =
-                                        compressImage(context, selectedImages[0])
+                                    val file = File(selectedImages[0].path) // 获取文件路径
+                                    val fileRequestBody =
+                                        file.asRequestBody("image/*".toMediaTypeOrNull()) // 文件内容的 RequestBody
+                                    val fileParam = MultipartBody.Part.createFormData(
+                                        "file",
+                                        file.name,
+                                        fileRequestBody
+                                    )
 
-                                    // 异步请求图片数据
                                     val response =
                                         withContext(Dispatchers.IO) {
                                             fileParam?.let {
@@ -213,17 +218,27 @@ class PostEdit : ComponentActivity() {
 
                                     if (response != null) {
                                         if (response.code == 0 && response.data != null) {
-                                            // 上传成功
-                                            Toast.makeText(
-                                                context,
-                                                "Upload Successful",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            withContext(Dispatchers.Main) {
+                                                // 上传成功
+                                                Toast.makeText(
+                                                    context,
+                                                    "Upload Successful",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
                                         } else {
                                             throw Exception("Failed to fetch picture data or data is empty")
                                         }
                                     }
                                 } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        // 上传成功
+                                        Toast.makeText(
+                                            context,
+                                            "Error: ${e.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                     Log.e("TopicScreen", "Error: ${e.message}")
                                 }
                             }
@@ -363,30 +378,19 @@ class PostEdit : ComponentActivity() {
     }
 }
 
-fun compressImage(context: Context, uri: Uri, maxSize: Int = 1024 * 1024): MultipartBody.Part? {
+// 获取文件的 MultipartBody.Part
+fun createMultipartBodyPart(context: Context, uri: Uri): MultipartBody.Part? {
     // 获取文件的 InputStream
     val contentResolver: ContentResolver = context.contentResolver
-    val inputStream = contentResolver.openInputStream(uri)
+    val inputStream: InputStream? = contentResolver.openInputStream(uri)
 
     // 确保文件存在且 InputStream 不为 null
     if (inputStream != null) {
-        // 获取原始图片 Bitmap
-        val bitmap = BitmapFactory.decodeStream(inputStream)
+        // 获取文件的 MIME 类型
+        val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
 
-        // 压缩图片
-        val compressedBitmap = compressBitmap(bitmap, maxSize)
-
-        // 将 Bitmap 转换为字节数组
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        compressedBitmap.compress(
-            Bitmap.CompressFormat.JPEG,
-            80,
-            byteArrayOutputStream
-        )  // 压缩成 JPEG 格式
-
-        // 将字节数组转为 RequestBody
-        val requestBody =
-            byteArrayOutputStream.toByteArray().toRequestBody("image/jpeg".toMediaTypeOrNull())
+        // 将 InputStream 转换为 RequestBody
+        val requestBody = inputStream.readBytes().toRequestBody(mimeType.toMediaTypeOrNull())
 
         // 获取文件名
         val fileName = uri.lastPathSegment ?: "default_name.jpg"
@@ -397,22 +401,6 @@ fun compressImage(context: Context, uri: Uri, maxSize: Int = 1024 * 1024): Multi
     return null
 }
 
-// 压缩图片，确保图片大小不超过指定大小
-fun compressBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
-    var quality = 100
-    var compressedBitmap = bitmap
-    var stream = ByteArrayOutputStream()
-
-    // 逐步降低图片质量直到满足大小限制
-    do {
-        stream.reset()
-        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
-        quality -= 10
-        compressedBitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
-    } while (stream.size() > maxSize && quality > 0)
-
-    return compressedBitmap
-}
 
 @Composable
 fun MyButtonWithProgress() {

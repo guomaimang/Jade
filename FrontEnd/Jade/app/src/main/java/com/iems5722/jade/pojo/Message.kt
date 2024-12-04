@@ -8,6 +8,6 @@ data class Message(
     val userId: Int,
     val type: Int?,
     val content: String,
-    val nickname: String,
+    val nickname: String?,
     val topicId: Int
 )

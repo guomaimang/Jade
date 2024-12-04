@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -285,6 +286,11 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
                             .weight(1f)
                             .padding(8.dp),
                         placeholder = { Text("Enter your message...") },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
                         shape = MaterialTheme.shapes.extraLarge,
                     )
                     IconButton(onClick = {

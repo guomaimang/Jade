@@ -128,6 +128,7 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     val nickname = userInfo?.data?.nickname ?: "Unknown User"
 
                     Post(
+                        id = image.id,
                         image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
                         title = image.title ?: "No Title",
                         content = image.description ?: "No Description",

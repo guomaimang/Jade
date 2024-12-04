@@ -46,5 +46,5 @@ interface PictureApiService {
     ): Response<ResponseBody>
 
     @GET("/picture/info")
-    fun getPictureInfo(@Query("pictureId") pictureId: Int): ResultWrapper<Picture>
+    suspend fun getPictureInfo(@Query("pictureId") pictureId: Int): ResultWrapper<Picture>
 }

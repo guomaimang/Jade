@@ -3,6 +3,7 @@ package com.iems5722.jade.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +58,10 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // TODO: 高级信息获取展示, 具体如何展示, 类已经定义好了, 明天商讨
 class Detail : ComponentActivity() {
@@ -65,20 +70,20 @@ class Detail : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 从 Intent 获取传递的数据
+        val postId = intent.getIntExtra("id", 0)
         val postTitle = intent.getStringExtra("postTitle")
         val postContent = intent.getStringExtra("postContent")
 
         val postImage = intent.getStringExtra("postImage")
+        val highResolutionPostImage = postImage?.replace("thumbnail", "picture")
         val pictures = mutableListOf<String>()
-        pictures.add(postImage.toString())
-
-        val time = intent.getStringExtra("time")
+        pictures.add(highResolutionPostImage.toString())
 
         enableEdgeToEdge()
         setContent {
             JadeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    DetailScreen(postTitle, postContent, pictures)
+                    DetailScreen(postId, postTitle, postContent, pictures)
                 }
             }
         }
@@ -96,6 +101,7 @@ data class ExtraInfo(
 
 @Composable
 fun DetailScreen(
+    postId: Int?,
     postTitle: String?,
     postContent: String?,
     pictures: MutableList<String>,
@@ -108,8 +114,6 @@ fun DetailScreen(
 
     val jwt = UserPrefs.getJwt(context).toString()
 
-    // TODO: Get extra information
-
     val testExifSize = ""
     val testExifTime = ""
     val testExifLatitude = ""
@@ -117,7 +121,7 @@ fun DetailScreen(
     val testExifLocation = ""
     val testExifDevice = ""
 
-    val picInfo = ExtraInfo(
+    var picInfo = ExtraInfo(
         testExifSize,
         testExifTime,
         testExifLatitude,
@@ -132,6 +136,42 @@ fun DetailScreen(
     var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
+
+    val pictureApiService = RetrofitInstance(jwt).pictureApiService()
+    LaunchedEffect(true) {
+        try {
+            // 异步请求图片数据
+            val response = withContext(Dispatchers.IO) {
+                postId?.let { pictureApiService.getPictureInfo(it) }
+            }
+
+            if (response != null) {
+                if (response.code == 0 && response.data != null) {
+                    val pictureInfoData = response.data
+
+                    val extraInfo = ExtraInfo(
+                        exifSize = pictureInfoData.exifSize,
+                        exifTime = pictureInfoData.exifTime,
+                        exifLatitude = pictureInfoData.exifLatitude,
+                        exifLongitude = pictureInfoData.exifLongitude,
+                        exifLocation = pictureInfoData.exifLocation,
+                        exifDevice = pictureInfoData.exifDevice,
+                    )
+
+                    picInfo = extraInfo
+                } else {
+                    // 处理图片数据为空的情况
+                    throw Exception("Failed to fetch picture data or data is empty")
+                }
+            }
+
+        } catch (e: Exception) {
+            // 捕获异常并在 UI 上显示错误信息
+            Log.e("TopicScreen", "Error: ${e.message}")
+        }
+    }
+
+
 
     Box(
         // Background layer
@@ -158,8 +198,7 @@ fun DetailScreen(
                 .onGloballyPositioned { coordinates ->
                     headerHeight = coordinates.size.height / 2
                 }
-                .zIndex(1f)
-        ) {
+                .zIndex(1f)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,8 +214,7 @@ fun DetailScreen(
                     },
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = "Back"
+                        painter = painterResource(id = R.drawable.back), contentDescription = "Back"
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -193,15 +231,9 @@ fun DetailScreen(
 //                    )
                 ) {
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(avatar)
-                            .httpHeaders(
-                                NetworkHeaders.Builder()
-                                    .add("jwt", jwt)
-                                    .build()
-                            )
-                            .crossfade(true)
-                            .build(),
+                        model = ImageRequest.Builder(LocalContext.current).data(avatar).httpHeaders(
+                                NetworkHeaders.Builder().add("jwt", jwt).build()
+                            ).crossfade(true).build(),
                         placeholder = painterResource(R.drawable.placeholder),
                         contentDescription = "user_img",
                         contentScale = ContentScale.Crop,
@@ -228,8 +260,7 @@ fun DetailScreen(
                     },
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.map),
-                        contentDescription = "Map"
+                        painter = painterResource(id = R.drawable.map), contentDescription = "Map"
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -246,8 +277,7 @@ fun DetailScreen(
                 .onGloballyPositioned { coordinates ->
                     bottomHeight = coordinates.size.height / 2
                 }
-                .zIndex(1f)
-        ) {
+                .zIndex(1f)) {
             // TODO: Bottom : commitment input like chatroom
 
         }
@@ -287,13 +317,11 @@ fun DetailScreen(
 @Composable
 fun AdvancedInfo(extraInfo: ExtraInfo) {
     var needToShow by remember { mutableStateOf(false) }
-    Text(
-        text = stringResource(R.string.AdvanceInformation),
+    Text(text = stringResource(R.string.AdvanceInformation),
         style = TextStyle(color = Color.Gray, fontSize = 16.sp),
         modifier = Modifier.clickable {
             needToShow = true
-        }
-    )
+        })
 
     if (needToShow) {
         if (extraInfo.exifSize != "") {
@@ -308,7 +336,7 @@ fun AdvancedInfo(extraInfo: ExtraInfo) {
                 style = TextStyle(color = Color.Gray, fontSize = 16.sp),
             )
         }
-        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude !="") {
+        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude != "") {
             Text(
                 text = "Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
                 style = TextStyle(color = Color.Gray, fontSize = 16.sp),
@@ -326,13 +354,11 @@ fun AdvancedInfo(extraInfo: ExtraInfo) {
                 style = TextStyle(color = Color.Gray, fontSize = 16.sp),
             )
         }
-        Text(
-            text = stringResource(R.string.HideInformation),
+        Text(text = stringResource(R.string.HideInformation),
             style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 16.sp),
             modifier = Modifier.clickable {
                 needToShow = false
-            }
-        )
+            })
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -352,13 +378,11 @@ fun PostDivider() {
 @Composable
 fun DetailPostShow(postTitle: String, postContent: String) {
     Text(
-        text = postTitle,
-        style = TextStyle(color = Color.Black, fontSize = 24.sp)
+        text = postTitle, style = TextStyle(color = Color.Black, fontSize = 24.sp)
     )
 
     Text(
-        text = postContent,
-        style = TextStyle(color = Color.Black, fontSize = 16.sp)
+        text = postContent, style = TextStyle(color = Color.Black, fontSize = 16.sp)
     )
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -376,22 +400,16 @@ fun banner(picList: List<String>) {
                 pageSpacing = 16.dp
             ) { page ->
                 // Our page content
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(picList[page])
-                        .build(),
+                AsyncImage(model = ImageRequest.Builder(context).data(picList[page]).build(),
                     placeholder = painterResource(R.drawable.placeholder),
                     contentDescription = "user_img",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clickable(
-                            onClick = {
-                                // TODO: If click do what?
+                        .clickable(onClick = {
+                            // TODO: If click do what?
 
-                            }
-                        )
-                )
+                        }))
             }
 
             DotIndicators(
@@ -407,9 +425,7 @@ fun banner(picList: List<String>) {
 
 @Composable
 fun DotIndicators(
-    pageCount: Int,
-    pagerState: PagerState,
-    modifier: Modifier
+    pageCount: Int, pagerState: PagerState, modifier: Modifier
 ) {
     Row(modifier = modifier) {
         repeat(pageCount) { iteration ->

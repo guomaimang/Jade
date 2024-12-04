@@ -94,6 +94,7 @@ class Topic : ComponentActivity() {
 
 
 data class Post(
+    var id: Int,
     var image: String,
     var title: String,
     var content: String,
@@ -186,6 +187,7 @@ fun TopicScreen() {
                     val nickname = userInfo?.data?.nickname ?: "Unknown User"
 
                     Post(
+                        id = image.id,
                         image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
                         title = image.title ?: "No Title",
                         content = image.description ?: "No Description",
@@ -448,6 +450,7 @@ fun TopicScreen() {
                                                                     ?: "Unknown User"
 
                                                             Post(
+                                                                id = image.id,
                                                                 image = "https://jade.dev.hirsun.tech/picture/get_file?file_name=${image.fileName}&user_id=${image.userId}&resolution=thumbnail",
                                                                 title = image.title ?: "No Title",
                                                                 content = image.description
@@ -549,6 +552,7 @@ fun PostItemShow(postItem: Post, jwt: String) {
                         intent.putExtra("postTitle", postItem.title)
                         intent.putExtra("postContent", postItem.content)
                         intent.putExtra("postImage", postItem.image)
+                        intent.putExtra("id", postItem.id)
                         intent.putExtra("time", postItem.time)
                         context.startActivity(intent)
                     }

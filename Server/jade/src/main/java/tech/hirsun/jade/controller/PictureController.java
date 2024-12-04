@@ -46,6 +46,7 @@ public class PictureController {
         return Result.success(pictureService.getTopicPictures(topicId, pageNum, pageSize));
     }
 
+
     /**
      * upload picture
      * @param file: file object

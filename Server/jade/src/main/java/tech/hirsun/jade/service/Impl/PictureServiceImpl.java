@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.hirsun.jade.controller.exception.custom.BadRequestException;
 import tech.hirsun.jade.dao.PictureDao;
@@ -167,8 +166,10 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public List getUserPictures(int loggedInUserId, Integer pageNum, Integer pageSize) {
-        return pictureDao.list(null, loggedInUserId, (pageNum - 1) * pageSize, pageSize);
+    public PageBean getUserPictures(int loggedInUserId, Integer pageNum, Integer pageSize) {
+        List<Picture> pictures = pictureDao.list(null, loggedInUserId, (pageNum - 1) * pageSize, pageSize);
+        int count = pictureDao.count(null, loggedInUserId);
+        return new PageBean(count, pictures, Math.floorDiv(count, pageSize) + 1, pageNum);
     }
 
     public String convertCoordinateToAddress(String latitude, String longitude) {

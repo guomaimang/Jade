@@ -184,16 +184,6 @@ fun DetailScreen(
             .fillMaxSize()
             .padding(vertical = 48.dp)
     ) {
-        // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
         Box(
             // Header
             modifier = Modifier
@@ -224,17 +214,7 @@ fun DetailScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Row(
-//                    // If need to access target account info
-//                    modifier = Modifier.clickable(
-//                        onClick = {
-//                            // TODO: What to pass for setting?
-//
-//                            val intent = Intent(context, Setting::class.java)
-//                            context.startActivity(intent)
-//                        }
-//                    )
-                ) {
+                Row {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current).data(avatar).httpHeaders(
                             NetworkHeaders.Builder().add("jwt", jwt).build()
@@ -259,7 +239,6 @@ fun DetailScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    // TODO: Brings what?
                     onClick = {
                         openMap(context)
                     },
@@ -282,7 +261,6 @@ fun DetailScreen(
                     bottomHeight = coordinates.size.height / 2
                 }
                 .zIndex(1f)) {
-            // TODO: Bottom : commitment input like chatroom
         }
 
         Box(
@@ -303,14 +281,7 @@ fun DetailScreen(
                         }
                     }
                 }
-
                 item { AdvancedInfo(picInfo) }
-                // item { PostDivider() }
-
-//                item {
-//                    // TODO: Copy your chatroom
-//                }
-
                 item { Spacer(modifier = Modifier.height(bottomHeight.dp)) }
             }
         }
@@ -345,13 +316,6 @@ fun AdvancedInfo(extraInfo: ExtraInfo) {
                 modifier = Modifier.padding(16.dp, 0.dp)
             )
         }
-//        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude != "") {
-//            Text(
-//                text = "Absolute Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
-//                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
-//                modifier = Modifier.padding(16.dp, 0.dp)
-//            )
-//        }
         if (extraInfo.exifLocation != "") {
             Text(
                 text = "Location: ${extraInfo.exifLocation}",
@@ -407,11 +371,9 @@ fun DetailPostShow(postTitle: String, postContent: String, postLocation: String)
 
     Row {
         IconButton(
-            // TODO: Brings what?
             onClick = {
 
             },
-            // modifier = Modifier.align(Alignment.CenterVertically)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.pin),
@@ -451,15 +413,14 @@ fun banner(picList: List<String>) {
                 pageSpacing = 16.dp
             ) { page ->
                 // Our page content
-                AsyncImage(model = ImageRequest.Builder(context).data(picList[page]).build(),
+                AsyncImage(
+                    model = ImageRequest.Builder(context).data(picList[page]).build(),
                     placeholder = painterResource(R.drawable.placeholder),
                     contentDescription = "user_img",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(onClick = {
-                            // TODO: If click do what?
-
                         })
                 )
             }

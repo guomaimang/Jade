@@ -96,7 +96,6 @@ class ChatActivities : ComponentActivity() {
                         topicId = topicId?.toInt() ?: 4,
                         chatroomName = topicName,
                         avatar = avatar,
-//                        onBackPressed = { onBackPressedDispatcher.onBackPressed() }
                     )
                 }
             }
@@ -178,16 +177,6 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
             .fillMaxSize()
             .padding(vertical = 48.dp)
     ) {
-        // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
         Box(
             // Header
             modifier = Modifier
@@ -354,14 +343,6 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
                         )
                     }
                 }
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    // TODO: Input?
-//                }
             }
         }
 

@@ -94,7 +94,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
         context = context,
     )
 
-    // TODO: Get User's information
     val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)
     val mail = UserPrefs.getEmail(context)
@@ -140,7 +139,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
 
                 withContext(Dispatchers.Main) {
                     myPostList = posts
-//                    isLoading = false
                 }
             } else {
                 // 处理图片数据为空的情况
@@ -150,8 +148,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
         } catch (e: Exception) {
             // 捕获异常并在 UI 上显示错误信息
             Log.e("TopicScreen", "Error: ${e.message}")
-//            errorMessage = "Error: ${e.message}"
-//            isLoading = false
         }
     }
 
@@ -165,16 +161,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .padding(vertical = 48.dp)
     ) {
-        // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
         Box(
             // Header
             modifier = Modifier
@@ -209,7 +195,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                 }
                 .zIndex(1f)
         ) {
-            // TODO: Bottom
             Column {
                 Row(
                     modifier = Modifier
@@ -218,7 +203,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        // TODO: jump to ?
                         onClick = {
                             val intent = Intent(context, Topic::class.java)
                             context.startActivity(intent)
@@ -249,7 +233,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
-                            // TODO: What to deliver?
                             val intent = Intent(context, ChatRooms::class.java)
                             context.startActivity(intent)
                         },
@@ -318,7 +301,6 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.weight(1f))
 
                     IconButton(
-                        // TODO: Brings what?
                         onClick = {
                             // 用户退出的时候重置本地用户数据
                             UserPrefs.resetJWT(context)
@@ -355,11 +337,11 @@ fun SettingScreen(modifier: Modifier = Modifier) {
                         .fillMaxSize()
                         .padding(top = 0.dp, bottom = bottomHeight.dp, start = 0.dp, end = 0.dp)
                 ) {
-//                    myPostList.forEachIndexed { _, postItem ->
-//                        item {
-//                            PostItemShow(postItem)
-//                        }
-//                    }
+                    myPostList.forEachIndexed { _, postItem ->
+                        item {
+                            PostItemShow(postItem, jwt)
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(bottomHeight.dp))

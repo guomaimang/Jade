@@ -11,7 +11,7 @@ interface DemoApiService {
 
     @Multipart
     @POST("/demo/upload")
-    fun uploadFile(
+    suspend fun uploadFile(
         @Part file: MultipartBody.Part,
         @Part("picture") picture: RequestBody
     ): Call<String>

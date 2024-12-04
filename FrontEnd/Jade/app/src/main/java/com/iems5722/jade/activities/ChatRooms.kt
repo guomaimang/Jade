@@ -8,8 +8,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,7 +61,13 @@ import com.iems5722.jade.utils.UserPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@Suppress("DEPRECATION")
 class ChatRooms : ComponentActivity() {
+
+    companion object {
+        private const val FILE_SELECT_CODE = 0
+    }
+
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +78,26 @@ class ChatRooms : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     chatRoomsScreen()
                 }
+            }
+        }
+    }
+
+    fun showFileChooser() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(intent, FILE_SELECT_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FILE_SELECT_CODE && resultCode == RESULT_OK) {
+            val uri = data?.data
+            uri?.let {
+                val intent = Intent(this, PostEdit::class.java).apply {
+                    putExtra("selected_image", it.toString())
+                }
+                startActivity(intent)
             }
         }
     }
@@ -127,7 +151,6 @@ fun chatRoomsScreen() {
         context = context,
     )
 
-    var bgHeight = ContentScale.FillHeight
     var headerHeight by remember { mutableIntStateOf(0) }
     var bottomHeight by remember { mutableIntStateOf(0) }
     Box(
@@ -136,16 +159,6 @@ fun chatRoomsScreen() {
             .fillMaxSize()
             .padding(vertical = 48.dp)
     ) {
-        // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
         Box(
             // Header
             modifier = Modifier
@@ -167,8 +180,6 @@ fun chatRoomsScreen() {
                 Row(
                     modifier = Modifier.clickable(
                         onClick = {
-                            // TODO: What to pass for setting?
-
                             val intent = Intent(context, Setting::class.java)
                             context.startActivity(intent)
                         }
@@ -188,7 +199,6 @@ fun chatRoomsScreen() {
                             .align(Alignment.CenterVertically)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-//                    Text(text = stringResource(R.string.app_name))
                     if (nickname != null) {
                         Text(
                             text = nickname,
@@ -213,7 +223,6 @@ fun chatRoomsScreen() {
                 }
                 .zIndex(1f)
         ) {
-            // TODO: Bottom
             Column {
                 Row(
                     modifier = Modifier
@@ -222,7 +231,6 @@ fun chatRoomsScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        // TODO: jump to ?
                         onClick = {
                             val intent = Intent(context, Topic::class.java)
                             context.startActivity(intent)
@@ -237,11 +245,7 @@ fun chatRoomsScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
-                                )
-                            )
+                            (context as Topic).showFileChooser()
                         },
                         modifier = Modifier.weight(1f)
                     ) {
@@ -253,7 +257,6 @@ fun chatRoomsScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = {
-                            // TODO: What to deliver?
                             val intent = Intent(context, ChatRooms::class.java)
                             context.startActivity(intent)
                         },
@@ -326,49 +329,11 @@ fun SingleChatroomShow(chatroom: Chatroom) {
                 .align(Alignment.CenterVertically)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        // TODO: temporary use
         Text(
             text = chatroom.chatroomName,
             style = TextStyle(fontSize = 20.sp),
             modifier = Modifier.align(Alignment.CenterVertically),
         )
-
-//        Column(
-//            modifier = Modifier
-//                .align(Alignment.CenterVertically),
-//        ) {
-//            Text(
-//                text = chatroom.chatroomName,
-//                style = TextStyle(fontSize = 20.sp)
-//            )
-//            Text(
-//                text = chatroom.latestMessage,
-//                style = TextStyle(color = Color.Gray, fontSize = 10.sp)
-//            )
-//        }
-//        Spacer(modifier = Modifier.weight(1f))
-//        Column(
-//            modifier = Modifier
-//                .align(Alignment.CenterVertically),
-//            horizontalAlignment = Alignment.End
-//        ) {
-//            Text(
-//                text = chatroom.latestMessageTime,
-//                style = TextStyle(fontSize = 10.sp)
-//            )
-//            val flag = (chatroom.unRead == 0)
-//            if (flag) {
-//                Text(
-//                    text = "${chatroom.unRead}",
-//                    style = TextStyle(color = Color.Gray)
-//                )
-//            } else {
-//                Text(
-//                    text = "${chatroom.unRead}",
-//                    style = TextStyle(color = Color.Red)
-//                )
-//            }
-//        }
         Spacer(modifier = Modifier.width(8.dp))
     }
 }

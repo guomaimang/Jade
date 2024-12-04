@@ -144,9 +144,7 @@ class MainActivity : ComponentActivity() {
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
-//                .background(Brush.linearGradient(colorStops = colorStops))
-            ,
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -181,31 +179,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-//                TextField(
-//                    value = text1,
-//                    onValueChange = { newText -> text1 = newText },
-//                    modifier = Modifier.align(Alignment.CenterHorizontally),
-//                    colors = TextFieldDefaults.colors(
-//                        focusedIndicatorColor = Color.Transparent,
-//                        unfocusedIndicatorColor = Color.Transparent,
-//                        disabledIndicatorColor = Color.Transparent
-//                    ),
-//                    shape = MaterialTheme.shapes.extraLarge,
-//                    label = { Text("Enter your email") }
-//                )
-//                Spacer(modifier = Modifier.height(8.dp))
-//            TextField(
-//                value = text2,
-//                onValueChange = { newText -> text2 = newText },
-//                colors = TextFieldDefaults.colors(
-//                    focusedIndicatorColor = Color.Transparent,
-//                    unfocusedIndicatorColor = Color.Transparent,
-//                    disabledIndicatorColor = Color.Transparent
-//                ),
-//                modifier = Modifier.align(Alignment.CenterHorizontally),
-//                shape = MaterialTheme.shapes.extraLarge,
-//                label = { Text("Enter your password") }
-//            )
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
@@ -241,7 +214,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .clickable {
-                                // TODO: Check User Agreement
                             }
                     )
                 }
@@ -280,7 +252,6 @@ class MainActivity : ComponentActivity() {
 
 
 fun px2dp(scale: Float, px: Int): Int {
-//    val scale = resources.displayMetrics.density
     return (px / scale + 0.5f).toInt()
 }
 

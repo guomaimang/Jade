@@ -7,7 +7,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -168,17 +167,15 @@ class PostEdit : ComponentActivity() {
                     onClick = {
                         CoroutineScope(Dispatchers.Main).launch {
                             try {
-                                // 解析 location 字符串
-                                val coordinates = location.trim('(', ')').split(",")
-                                val coordinateX = coordinates[0]
-                                val coordinateY = coordinates[1]
-
                                 val jsonObject = JSONObject()
                                 jsonObject.put("title", title)
                                 jsonObject.put("description", content)
                                 jsonObject.put("topicId", tag)
-                                jsonObject.put("userId", UserPrefs.getUserId(context)?.toInt() ?: 1)
-                                if (location == "Add Location") {
+                                if (location != "Add Location") {
+                                    // 解析 location 字符串
+                                    val coordinates = location.trim('(', ')').split(",")
+                                    val coordinateX = coordinates[0]
+                                    val coordinateY = coordinates[1]
                                     jsonObject.put("coordinateX", coordinateX)
                                     jsonObject.put("coordinateY", coordinateY)
                                 }
@@ -223,7 +220,7 @@ class PostEdit : ComponentActivity() {
                             }
                         }
                         // 退出当前界面
-                        (context as? Activity)?.finish()  // 如果在 Activity 中
+                        (context as? Activity)?.finish()
                     },
                 ) {
                     Icon(
@@ -237,22 +234,11 @@ class PostEdit : ComponentActivity() {
                 painter = rememberAsyncImagePainter(selectedImage),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(100.dp) // 设置大小，根据需要调整
+                    .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable { /* Image click action */ },
                 contentScale = ContentScale.Crop
             )
-//                items(selectedImages) { uri ->
-//                    Image(
-//                        painter = rememberAsyncImagePainter(uri),
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(100.dp)
-//                            .clip(RoundedCornerShape(8.dp))
-//                            .clickable { /* Image click action */ },
-//                        contentScale = ContentScale.Crop
-//                    )
-//                }
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -322,13 +308,6 @@ class PostEdit : ComponentActivity() {
                         }
                     }
                 }
-//                item {
-//                    TextButton(onClick = {
-//                        buttonColor = if (buttonColor == Color.Gray) Color.Green else Color.Gray
-//                    }) {
-//                        Text("Add Tag")
-//                    }
-//                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -372,19 +351,6 @@ fun createMultipartBodyPart(context: Context, uri: Uri): MultipartBody.Part? {
 
         // 获取文件名
         val fileName = uri.lastPathSegment ?: "default_name.jpg"
-
-        // 如果 URI 来源于 content:// 需要从 MediaStore 获取文件路径
-        if (uri.scheme == "content") {
-            val cursor =
-                contentResolver.query(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val filePath = it.getString(it.getColumnIndex(MediaStore.Images.Media.DATA))
-                    // 这里可以使用 filePath 来获取文件
-                    // 你可以用 filePath 打开文件并读取内容
-                }
-            }
-        }
 
         // 创建 MultipartBody.Part
         return MultipartBody.Part.createFormData("file", fileName, requestBody)

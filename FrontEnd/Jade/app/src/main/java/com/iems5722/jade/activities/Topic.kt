@@ -112,11 +112,6 @@ class Topic : ComponentActivity() {
             }
         }
     }
-
-    private fun uploadFile(uri: Uri) {
-        // Implement your file upload logic here
-        // For example, you can use Retrofit to upload the file
-    }
 }
 
 
@@ -231,7 +226,6 @@ fun TopicScreen() {
         } catch (e: Exception) {
             // 捕获异常并在 UI 上显示错误信息
             Log.e("TopicScreen", "Error: ${e.message}")
-//            errorMessage = "Error: ${e.message}"
             isLoading = false
         }
     }
@@ -271,18 +265,6 @@ fun TopicScreen() {
                 .fillMaxSize()
                 .padding(vertical = 48.dp)
         ) {
-            // TODO: If bg is needed
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(backgroundImgUrl)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = "bg_img",
-//            contentScale = bgHeight,
-//            modifier = Modifier.fillMaxSize()
-//        )
-
-
             Box(
                 // Header
                 modifier = Modifier
@@ -304,8 +286,6 @@ fun TopicScreen() {
                     Row(
                         modifier = Modifier.clickable(
                             onClick = {
-                                // TODO: What to pass for setting?
-
                                 val intent = Intent(context, Setting::class.java)
                                 context.startActivity(intent)
                             }
@@ -325,7 +305,6 @@ fun TopicScreen() {
                                 .align(Alignment.CenterVertically)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
-//                    Text(text = stringResource(R.string.app_name))
                         if (nickname != null) {
                             Text(
                                 text = nickname,
@@ -336,7 +315,6 @@ fun TopicScreen() {
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
-                        // TODO: What to bring?
                         onClick = {
                             openMap(context)
                         },
@@ -361,7 +339,6 @@ fun TopicScreen() {
                     }
                     .zIndex(1f)
             ) {
-                // TODO: Bottom
                 Column {
                     Row(
                         modifier = Modifier
@@ -370,7 +347,6 @@ fun TopicScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
-                            // TODO: jump to ?
                             onClick = {
                                 val intent = Intent(context, Topic::class.java)
                                 context.startActivity(intent)
@@ -531,22 +507,6 @@ fun TopicScreen() {
                             }
                         }
                     }
-
-
-                    // Usage of Image(From Web)
-//                AsyncImage(
-//                    model = ImageRequest.Builder(LocalContext.current)
-//                        .data(self_fig)
-//                        .crossfade(true)
-//                        .build(),
-//                    placeholder = painterResource(R.drawable.placeholder),
-//                    contentDescription = "user_img",
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .clip(CircleShape)
-//                        .size(48.dp),
-//                )
-//                Text(text = "Topic")
                 }
             }
         }
@@ -565,7 +525,6 @@ fun PostItemShow(postItem: Post, jwt: String) {
             modifier = Modifier
                 .clickable(
                     onClick = {
-                        // TODO: What to pass for select post?
                         val intent = Intent(context, Detail::class.java)
                         intent.putExtra("postTitle", postItem.title)
                         intent.putExtra("postContent", postItem.content)
@@ -661,13 +620,5 @@ fun openMap(context: Context) {
     // 点击时打开 Custom Tab
     customTabsIntent.launchUrl(context, Uri.parse(url))
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun TopicPreview() {
-//    JadeTheme {
-//        TopicScreen()
-//    }
-//}
 
 

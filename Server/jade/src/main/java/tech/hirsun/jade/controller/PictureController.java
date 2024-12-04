@@ -67,6 +67,8 @@ public class PictureController {
             throw new BadRequestException("File size exceeds the limit", ErrorCode.UPLOAD_FILE_SIZE_ERROR);
         }
 
+        log.info("Request upload picture, file name: {}", file.getOriginalFilename());
+
         // Validate file type
         String contentType = file.getContentType();
         if (!isSupportedContentType(contentType)) {
@@ -74,7 +76,7 @@ public class PictureController {
         }
 
         String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic)$")) {
+        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic|JPG|JPEG|PNG|HEIC)$")) {
             throw new BadRequestException("Invalid file extension", ErrorCode.UPLOAD_FILE_TYPE_ERROR);
         }
 
@@ -110,7 +112,7 @@ public class PictureController {
 
         // only support jpg, jpeg, png, heic
         String fileExtension = StringUtils.getFilenameExtension(file_name);
-        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic)$")) {
+        if (fileExtension == null || !fileExtension.matches("^(jpg|jpeg|png|heic|JPG|JPEG|PNG|HEIC)$")) {
             throw new BadRequestException("Invalid file extension", ErrorCode.REQUEST_ILLEGAL);
         }
 

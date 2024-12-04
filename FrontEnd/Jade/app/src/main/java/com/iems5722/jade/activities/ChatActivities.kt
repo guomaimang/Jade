@@ -62,13 +62,18 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
+import com.iems5722.jade.utils.ImageLinkGenerator
 import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Year
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -108,6 +113,7 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
     val jwt = UserPrefs.getJwt(context).toString()
     val currentUserId = UserPrefs.getUserId(context)
     val nickname = UserPrefs.getNickname(context)
+    val currentUserAvatar = UserPrefs.getAvatar(context)
 
     val messages = remember { mutableStateListOf<Message>() }
     var messageText by remember { mutableStateOf(TextFieldValue()) }
@@ -128,15 +134,16 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
             if (response.code == 0 && response.data != null) {
                 val messagesData = response.data
                 val messageList = mutableListOf<Message>()
-
                 messagesData.map { message ->
+                    val image = ImageLinkGenerator.getUserImage(message.userId)
                     messageList.add(
                         Message(
                             nickname = message.nickname,
                             content = message.content,
                             type = message.type,
                             userId = message.userId,
-                            createTime = formatTimestampToDiscordStyle(message.createTime.toString())
+                            createTime = formatTimestampToDiscordStyle(message.createTime.toString()),
+                            userAvatar = image
                         )
                     )
                 }
@@ -289,12 +296,14 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
                                     if (response.code == 0) {
                                         withContext(Dispatchers.Main) {
                                             messages.add(
+
                                                 Message(
                                                     nickname = nickname,
                                                     content = messageText.text,
                                                     type = 1,
                                                     createTime = formatTimestampToDiscordStyle(Date().toString()),
-                                                    userId = currentUserId?.toInt() ?: 0
+                                                    userId = currentUserId?.toInt() ?: 0,
+                                                    userAvatar = currentUserAvatar.toString()
                                                 )
                                             )
                                             messageText = TextFieldValue()
@@ -372,67 +381,149 @@ data class Message(
     val type: Int?,
     val createTime: String?,
     val userId: Int,
+    val userAvatar: String
 )
 
 @Composable
 fun MessageCard(message: Message) {
     val context = LocalContext.current
     val currentUserId = UserPrefs.getUserId(context)
-    val alignment = if (message.userId == (currentUserId?.toInt() ?: 0)) {
+    val isSender = message.userId == (currentUserId?.toInt() ?: false)
+    val alignment = if (isSender) {
         Alignment.CenterEnd
     } else Alignment.CenterStart
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = alignment
     ) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (message.userId == (currentUserId?.toInt() ?: 0)) Color(
-                    0xFFD1FFDA
-                ) else Color(
-                    0xFFE0E0E0
+        if (isSender) {
+            Row {
+                SingleMessageCard(message, isSender)
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(message.userAvatar)
+                        .crossfade(true)
+                        .build(),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    contentDescription = "user_img",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(48.dp)
+                        .align(Alignment.CenterVertically)
                 )
-            ),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            }
+        }else {
+            Row {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(message.userAvatar)
+                        .crossfade(true)
+                        .build(),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    contentDescription = "user_img",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(48.dp)
+                        .align(Alignment.CenterVertically)
+                )
+                SingleMessageCard(message, isSender)
+            }
+        }
+    }
+}
+
+@Composable
+fun SingleMessageCard(message: Message, isSender:Boolean) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSender) Color(
+                0xFFD1FFDA
+            ) else Color(
+                0xFFE0E0E0
+            )
+        ),
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
+            Row{
                 Text(
                     text = message.nickname.toString(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (message.userId == (currentUserId?.toInt()
-                            ?: 0)
-                    ) Color(0xFF00796B) else Color(0xFF5D4037)
+                    color = if (isSender) Color(0xFF00796B) else Color(0xFF5D4037),
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = message.content,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = message.createTime.toString(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = message.content,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
 
 @SuppressLint("NewApi")
 fun formatTimestampToDiscordStyle(timestamp: String): String {
+    val currentDate = LocalDate.now()
+    val currentYear = Year.now().value
+    val currentDayOfYear = currentDate.dayOfYear
+
     // 使用合适的格式来解析收到的时间字符串
     val inputFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH)
     val date = inputFormat.parse(timestamp)
 
-    // 设置输出格式为 Discord 样式的时间格式（MM/dd/yyyy h:mm a）
-    val outputFormat = SimpleDateFormat("MM/dd/yyyy h:mm a", Locale.US)
+    val outputString: String
 
-    // 格式化成指定的字符串
-    return outputFormat.format(date)
+    if (date != null) {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        val year = calendar.get(Calendar.YEAR)
+        val day = calendar.get(Calendar.DAY_OF_YEAR)
+        val isLeapYear = Year.of(year).isLeap
+        val daysInYear = if (isLeapYear) 366 else 365
+
+        if (year == currentYear) {
+            if (currentDayOfYear == day) {
+                // 设置输出格式为 Discord 样式的时间格式（h:mm a）
+                val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
+                outputString = outputFormat.format(date)
+            }else if (currentDayOfYear - day== 1) {
+                // 设置输出格式为 Discord 样式的时间格式（h:mm a）
+                val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
+                outputString = "Yesterday " + outputFormat.format(date)
+            }else {
+                // 设置输出格式为 Discord 样式的时间格式（MM/dd h:mm a）
+                val outputFormat = SimpleDateFormat("MM/dd h:mm a", Locale.US)
+                outputString = outputFormat.format(date)
+            }
+        }else {
+            if (daysInYear == day && currentDayOfYear == 1 && currentYear - year == 1) {
+                // 设置输出格式为 Discord 样式的时间格式（h:mm a）
+                val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
+                outputString = outputFormat.format(date)
+            }else {
+                // 设置输出格式为 Discord 样式的时间格式（MM/dd/yyyy h:mm a）
+                val outputFormat = SimpleDateFormat("MM/dd/yyyy h:mm a", Locale.US)
+                // 格式化成指定的字符串
+                outputString = outputFormat.format(date)
+            }
+        }
+    }else {
+        outputString = "Didn't receive Date!"
+    }
+
+    return outputString
 }
 

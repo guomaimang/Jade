@@ -110,7 +110,7 @@ public class PictureController {
             throw new BadRequestException("Invalid file extension", ErrorCode.REQUEST_ILLEGAL);
         }
 
-        
+
         // subpath = type / + user_id + "/" + file_name
         String subPath;
         if (resolution.equals("thumbnail")) {

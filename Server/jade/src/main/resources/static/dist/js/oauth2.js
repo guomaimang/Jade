@@ -24,6 +24,5 @@ $.ajax({
     },
     error: function () {
         alert("Interface exception, please contact the administrator!")
-        window.location.href = "/login.html";
     }
 });

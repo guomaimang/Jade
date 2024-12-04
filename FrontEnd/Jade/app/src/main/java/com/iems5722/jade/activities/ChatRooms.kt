@@ -199,18 +199,6 @@ fun chatRoomsScreen() {
                 }
                 Spacer(modifier = Modifier.weight(1f))
 
-                IconButton(
-                    onClick = {
-                        openMap(context)
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.map),
-                        contentDescription = "Map"
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
             }
         }
 
@@ -315,6 +303,7 @@ fun SingleChatroomShow(chatroom: Chatroom) {
     Row(
         modifier = Modifier.clickable(
             onClick = {
+                UserPrefs.setSelectedTopic(context, chatroom.chatroomId.toInt())
                 val intent = Intent(context, ChatActivities::class.java)
                 intent.putExtra("avatar", chatroom.chatroomAvatar)
                 intent.putExtra("topic_name", chatroom.chatroomName)

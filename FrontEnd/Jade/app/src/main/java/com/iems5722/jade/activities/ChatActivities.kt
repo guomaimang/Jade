@@ -69,7 +69,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Year
@@ -244,6 +243,19 @@ fun ChatActivitiesScreen(chatroomName: String?, avatar: String?, topicId: Int) {
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(
+                    onClick = {
+                        openMap(context)
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.map),
+                        contentDescription = "Map"
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
 
@@ -413,7 +425,7 @@ fun MessageCard(message: Message) {
                         .align(Alignment.CenterVertically)
                 )
             }
-        }else {
+        } else {
             Row {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -435,7 +447,7 @@ fun MessageCard(message: Message) {
 }
 
 @Composable
-fun SingleMessageCard(message: Message, isSender:Boolean) {
+fun SingleMessageCard(message: Message, isSender: Boolean) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -450,7 +462,7 @@ fun SingleMessageCard(message: Message, isSender:Boolean) {
         Column(
             modifier = Modifier.padding(8.dp)
         ) {
-            Row{
+            Row {
                 Text(
                     text = message.nickname.toString(),
                     style = MaterialTheme.typography.labelSmall,
@@ -499,28 +511,28 @@ fun formatTimestampToDiscordStyle(timestamp: String): String {
                 // 设置输出格式为 Discord 样式的时间格式（h:mm a）
                 val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
                 outputString = outputFormat.format(date)
-            }else if (currentDayOfYear - day== 1) {
+            } else if (currentDayOfYear - day == 1) {
                 // 设置输出格式为 Discord 样式的时间格式（h:mm a）
                 val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
                 outputString = "Yesterday " + outputFormat.format(date)
-            }else {
+            } else {
                 // 设置输出格式为 Discord 样式的时间格式（MM/dd h:mm a）
                 val outputFormat = SimpleDateFormat("MM/dd h:mm a", Locale.US)
                 outputString = outputFormat.format(date)
             }
-        }else {
+        } else {
             if (daysInYear == day && currentDayOfYear == 1 && currentYear - year == 1) {
                 // 设置输出格式为 Discord 样式的时间格式（h:mm a）
                 val outputFormat = SimpleDateFormat("h:mm a", Locale.US)
                 outputString = outputFormat.format(date)
-            }else {
+            } else {
                 // 设置输出格式为 Discord 样式的时间格式（MM/dd/yyyy h:mm a）
                 val outputFormat = SimpleDateFormat("MM/dd/yyyy h:mm a", Locale.US)
                 // 格式化成指定的字符串
                 outputString = outputFormat.format(date)
             }
         }
-    }else {
+    } else {
         outputString = "Didn't receive Date!"
     }
 

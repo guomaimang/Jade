@@ -4,6 +4,7 @@ import com.iems5722.jade.model.PageBean
 import com.iems5722.jade.model.ResultWrapper
 import com.iems5722.jade.pojo.Picture
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.DELETE
@@ -32,7 +33,7 @@ interface PictureApiService {
     @POST("/picture/upload")
     suspend fun uploadPicture(
         @Part file: MultipartBody.Part,
-        @Part("picture") picture: String
+        @Part("picture") picture: RequestBody
     ): ResultWrapper<Picture>
 
     @DELETE("/picture/delete")

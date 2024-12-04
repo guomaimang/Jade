@@ -10,8 +10,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
@@ -67,7 +65,6 @@ import coil3.request.crossfade
 import com.iems5722.jade.R
 import com.iems5722.jade.ui.theme.JadeTheme
 import com.iems5722.jade.utils.ImageLinkGenerator
-import com.iems5722.jade.utils.ImageUploadHelper
 import com.iems5722.jade.utils.RetrofitInstance
 import com.iems5722.jade.utils.UserPrefs
 import kotlinx.coroutines.CoroutineScope
@@ -75,7 +72,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Suppress("DEPRECATION")
 class Topic : ComponentActivity() {
+
+    companion object {
+        private const val FILE_SELECT_CODE = 0
+    }
 
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -89,6 +91,31 @@ class Topic : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun showFileChooser() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(intent, FILE_SELECT_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FILE_SELECT_CODE && resultCode == RESULT_OK) {
+            val uri = data?.data
+            uri?.let {
+                val intent = Intent(this, PostEdit::class.java).apply {
+                    putExtra("selected_image", it.toString())
+                }
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun uploadFile(uri: Uri) {
+        // Implement your file upload logic here
+        // For example, you can use Retrofit to upload the file
     }
 }
 
@@ -150,11 +177,6 @@ fun TopicScreen() {
 
     val pictureApiService = RetrofitInstance(jwt).pictureApiService()
     val userApiService = RetrofitInstance(jwt).userApiService()
-
-    val imageUploadHelper = ImageUploadHelper()
-    val photoPickerLauncher = imageUploadHelper.setupMediaPicker(
-        context = context,
-    )
 
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
@@ -363,11 +385,7 @@ fun TopicScreen() {
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = {
-                                photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(
-                                        ActivityResultContracts.PickVisualMedia.ImageAndVideo
-                                    )
-                                )
+                                (context as Topic).showFileChooser()
                             },
                             modifier = Modifier.weight(1f)
                         ) {
@@ -594,12 +612,13 @@ fun PostItemShow(postItem: Post, jwt: String) {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .size(32.dp)
+                        .size(28.dp)
                         .align(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = postItem.userNickname,
+                    style = TextStyle(fontSize = 12.sp),
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.weight(1f))

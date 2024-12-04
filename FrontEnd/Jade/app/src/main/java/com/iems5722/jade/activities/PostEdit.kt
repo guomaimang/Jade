@@ -7,6 +7,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,7 +25,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -68,6 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.InputStream
@@ -84,20 +85,13 @@ class PostEdit : ComponentActivity() {
         requestLocationPermission()
 
         // 从 Intent 中获取选中的图片 URI 列表
-        val selectedImages = intent.getParcelableArrayListExtra<Uri>("selected_images")
-
-        // 检查是否为 null
-        if (selectedImages.isNullOrEmpty()) {
-            // 如果为空，显示错误日志并结束 Activity
-            Log.e("PostEditActivity", "No images provided for editing.")
-            finish()
-            return
-        }
+        val selectedImage = intent.getStringExtra("selected_image")
+        val selectedImageUri = Uri.parse(selectedImage)
 
         setContent {
             JadeTheme {
                 Scaffold {
-                    PostEditScreen(selectedImages)
+                    PostEditScreen(selectedImageUri)
                 }
             }
         }
@@ -114,12 +108,11 @@ class PostEdit : ComponentActivity() {
     @SuppressLint("MissingPermission", "UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun PostEditScreen(selectedImages: List<Uri>) {
+    fun PostEditScreen(selectedImage: Uri) {
         val context = LocalContext.current
         locationListener = MyLocationListener(this)
 
         val jwt = UserPrefs.getJwt(context).toString()
-
 
         var title by remember { mutableStateOf("") }
         var content by remember { mutableStateOf("") }
@@ -185,18 +178,24 @@ class PostEdit : ComponentActivity() {
                                 jsonObject.put("description", content)
                                 jsonObject.put("topicId", tag)
                                 jsonObject.put("userId", UserPrefs.getUserId(context)?.toInt() ?: 1)
-                                jsonObject.put("coordinateX", coordinateX)
-                                jsonObject.put("coordinateY", coordinateY)
+                                if (location == "Add Location") {
+                                    jsonObject.put("coordinateX", coordinateX)
+                                    jsonObject.put("coordinateY", coordinateY)
+                                }
                                 val jsonString = jsonObject.toString()
+                                val requestBody = RequestBody.create(
+                                    "application/json".toMediaTypeOrNull(),
+                                    jsonString
+                                )
                                 println("jsonString: $jsonString")
 
-
-                                val fileParam = createMultipartBodyPart(context, selectedImages[0])
+                                val fileParam = createMultipartBodyPart(context, selectedImage)
 
                                 val response = withContext(Dispatchers.IO) {
                                     fileParam?.let {
                                         pictureApiService.uploadPicture(
-                                            picture = jsonString, file = it
+                                            it,
+                                            requestBody
                                         )
                                     }
                                 }
@@ -223,6 +222,8 @@ class PostEdit : ComponentActivity() {
                                 Log.e("TopicScreen", "Error: ${e.message}")
                             }
                         }
+                        // 退出当前界面
+                        (context as? Activity)?.finish()  // 如果在 Activity 中
                     },
                 ) {
                     Icon(
@@ -232,25 +233,26 @@ class PostEdit : ComponentActivity() {
                 }
             })
             // 图片展示区域
-            LazyRow(
+            Image(
+                painter = rememberAsyncImagePainter(selectedImage),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(selectedImages) { uri ->
-                    Image(
-                        painter = rememberAsyncImagePainter(uri),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { /* Image click action */ },
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-
+                    .size(100.dp) // 设置大小，根据需要调整
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { /* Image click action */ },
+                contentScale = ContentScale.Crop
+            )
+//                items(selectedImages) { uri ->
+//                    Image(
+//                        painter = rememberAsyncImagePainter(uri),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(100.dp)
+//                            .clip(RoundedCornerShape(8.dp))
+//                            .clickable { /* Image click action */ },
+//                        contentScale = ContentScale.Crop
+//                    )
+//                }
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -354,6 +356,7 @@ class PostEdit : ComponentActivity() {
 }
 
 // 获取文件的 MultipartBody.Part
+@SuppressLint("Range")
 fun createMultipartBodyPart(context: Context, uri: Uri): MultipartBody.Part? {
     // 获取文件的 InputStream
     val contentResolver: ContentResolver = context.contentResolver
@@ -369,6 +372,19 @@ fun createMultipartBodyPart(context: Context, uri: Uri): MultipartBody.Part? {
 
         // 获取文件名
         val fileName = uri.lastPathSegment ?: "default_name.jpg"
+
+        // 如果 URI 来源于 content:// 需要从 MediaStore 获取文件路径
+        if (uri.scheme == "content") {
+            val cursor =
+                contentResolver.query(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val filePath = it.getString(it.getColumnIndex(MediaStore.Images.Media.DATA))
+                    // 这里可以使用 filePath 来获取文件
+                    // 你可以用 filePath 打开文件并读取内容
+                }
+            }
+        }
 
         // 创建 MultipartBody.Part
         return MultipartBody.Part.createFormData("file", fileName, requestBody)

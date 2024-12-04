@@ -121,14 +121,18 @@ fun DetailScreen(
     val testExifLocation = ""
     val testExifDevice = ""
 
-    var picInfo by remember { mutableStateOf(ExtraInfo(
-        testExifSize,
-        testExifTime,
-        testExifLatitude,
-        testExifLongitude,
-        testExifLocation,
-        testExifDevice
-    )) }
+    var picInfo by remember {
+        mutableStateOf(
+            ExtraInfo(
+                testExifSize,
+                testExifTime,
+                testExifLatitude,
+                testExifLongitude,
+                testExifLocation,
+                testExifDevice
+            )
+        )
+    }
 
     val avatar = UserPrefs.getAvatar(context)
     val nickname = UserPrefs.getNickname(context)
@@ -159,6 +163,7 @@ fun DetailScreen(
                     )
 
                     picInfo = extraInfo
+                    postLocation = pictureInfoData.location
                 } else {
                     // 处理图片数据为空的情况
                     throw Exception("Failed to fetch picture data or data is empty")
@@ -232,8 +237,8 @@ fun DetailScreen(
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current).data(avatar).httpHeaders(
-                                NetworkHeaders.Builder().add("jwt", jwt).build()
-                            ).crossfade(true).build(),
+                            NetworkHeaders.Builder().add("jwt", jwt).build()
+                        ).crossfade(true).build(),
                         placeholder = painterResource(R.drawable.placeholder),
                         contentDescription = "user_img",
                         contentScale = ContentScale.Crop,
@@ -315,13 +320,15 @@ fun DetailScreen(
 @Composable
 fun AdvancedInfo(extraInfo: ExtraInfo) {
     var needToShow by remember { mutableStateOf(false) }
-    Text(text = stringResource(R.string.AdvanceInformation),
+    Text(
+        text = stringResource(R.string.AdvanceInformation),
         style = TextStyle(color = Color.Gray, fontSize = 20.sp),
         modifier = Modifier
             .clickable {
                 needToShow = true
-            }.padding(16.dp, 0.dp)
-        )
+            }
+            .padding(16.dp, 0.dp)
+    )
 
     if (needToShow) {
         if (extraInfo.exifSize != "") {
@@ -453,7 +460,8 @@ fun banner(picList: List<String>) {
                         .clickable(onClick = {
                             // TODO: If click do what?
 
-                        }))
+                        })
+                )
             }
 
             DotIndicators(

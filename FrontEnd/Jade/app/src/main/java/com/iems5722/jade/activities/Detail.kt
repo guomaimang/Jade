@@ -106,8 +106,9 @@ fun DetailScreen(
     postContent: String?,
     pictures: MutableList<String>,
 ) {
-    // TODO: Get Pictures
-    // TODO: Get Post Title and content
+    // TODO: Get Post User Location
+    var postLocation by remember { mutableStateOf("") }
+    postLocation = ""
 
     val context = LocalContext.current
 
@@ -264,7 +265,6 @@ fun DetailScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
-
         }
 
         Box(
@@ -278,7 +278,6 @@ fun DetailScreen(
                 }
                 .zIndex(1f)) {
             // TODO: Bottom : commitment input like chatroom
-
         }
 
         Box(
@@ -295,7 +294,7 @@ fun DetailScreen(
                 item {
                     if (postTitle != null) {
                         if (postContent != null) {
-                            DetailPostShow(postTitle, postContent)
+                            DetailPostShow(postTitle, postContent, postLocation)
                         }
                     }
                 }
@@ -317,47 +316,57 @@ fun DetailScreen(
 fun AdvancedInfo(extraInfo: ExtraInfo) {
     var needToShow by remember { mutableStateOf(false) }
     Text(text = stringResource(R.string.AdvanceInformation),
-        style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        modifier = Modifier.clickable {
-            needToShow = true
-        })
+        style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+        modifier = Modifier
+            .clickable {
+                needToShow = true
+            }.padding(16.dp, 0.dp)
+        )
 
     if (needToShow) {
         if (extraInfo.exifSize != "") {
             Text(
                 text = "Size: ${extraInfo.exifSize}",
-                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
         }
         if (extraInfo.exifTime != "") {
             Text(
                 text = "Time: ${extraInfo.exifTime}",
-                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
         }
-        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude != "") {
-            Text(
-                text = "Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
-                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-            )
-        }
+//        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude != "") {
+//            Text(
+//                text = "Absolute Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
+//                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+//                modifier = Modifier.padding(16.dp, 0.dp)
+//            )
+//        }
         if (extraInfo.exifLocation != "") {
             Text(
                 text = "Location: ${extraInfo.exifLocation}",
-                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
         }
         if (extraInfo.exifDevice != "") {
             Text(
                 text = "Device: ${extraInfo.exifDevice}",
-                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+                style = TextStyle(color = Color.Gray, fontSize = 20.sp),
+                modifier = Modifier.padding(16.dp, 0.dp)
             )
         }
         Text(text = stringResource(R.string.HideInformation),
-            style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 16.sp),
-            modifier = Modifier.clickable {
-                needToShow = false
-            })
+            style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 20.sp),
+            modifier = Modifier
+                .clickable {
+                    needToShow = false
+                }
+                .padding(16.dp, 0.dp)
+        )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -375,15 +384,51 @@ fun PostDivider() {
 }
 
 @Composable
-fun DetailPostShow(postTitle: String, postContent: String) {
+fun DetailPostShow(postTitle: String, postContent: String, postLocation: String) {
     Text(
-        text = postTitle, style = TextStyle(color = Color.Black, fontSize = 24.sp)
+        text = postTitle,
+        style = TextStyle(color = Color.Black, fontSize = 24.sp),
+        modifier = Modifier.padding(16.dp, 0.dp)
     )
-
+    Spacer(modifier = Modifier.height(8.dp))
     Text(
-        text = postContent, style = TextStyle(color = Color.Black, fontSize = 16.sp)
+        text = postContent,
+        style = TextStyle(color = Color.Black, fontSize = 20.sp),
+        modifier = Modifier.padding(16.dp, 0.dp)
     )
+    Spacer(modifier = Modifier.height(8.dp))
 
+    Row {
+        IconButton(
+            // TODO: Brings what?
+            onClick = {
+
+            },
+            // modifier = Modifier.align(Alignment.CenterVertically)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.pin),
+                contentDescription = "Sign Out",
+                tint = Color.Black,
+                modifier = Modifier
+                    .size(24.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        if (postLocation == "") {
+            Text(
+                text = "Unknown",
+                style = TextStyle(color = Color.Black, fontSize = 16.sp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+        } else {
+            Text(
+                text = postLocation, style = TextStyle(color = Color.Black, fontSize = 16.sp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+        }
+
+    }
     Spacer(modifier = Modifier.height(16.dp))
 }
 

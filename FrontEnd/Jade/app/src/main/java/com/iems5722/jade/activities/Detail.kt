@@ -110,12 +110,12 @@ fun DetailScreen(
 
     // TODO: Get extra information
 
-    val testExifSize = "1"
-    val testExifTime = "2"
-    val testExifLatitude = "3"
-    val testExifLongitude = "4"
-    val testExifLocation = "5"
-    val testExifDevice = "6"
+    val testExifSize = ""
+    val testExifTime = ""
+    val testExifLatitude = ""
+    val testExifLongitude = ""
+    val testExifLocation = ""
+    val testExifDevice = ""
 
     val picInfo = ExtraInfo(
         testExifSize,
@@ -296,26 +296,36 @@ fun AdvancedInfo(extraInfo: ExtraInfo) {
     )
 
     if (needToShow) {
-        Text(
-            text = "Size: ${extraInfo.exifSize}",
-            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        )
-        Text(
-            text = "Time: ${extraInfo.exifTime}",
-            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        )
-        Text(
-            text = "Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
-            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        )
-        Text(
-            text = "Location: ${extraInfo.exifLocation}",
-            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        )
-        Text(
-            text = "Device: ${extraInfo.exifDevice}",
-            style = TextStyle(color = Color.Gray, fontSize = 16.sp),
-        )
+        if (extraInfo.exifSize != "") {
+            Text(
+                text = "Size: ${extraInfo.exifSize}",
+                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+            )
+        }
+        if (extraInfo.exifTime != "") {
+            Text(
+                text = "Time: ${extraInfo.exifTime}",
+                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+            )
+        }
+        if (extraInfo.exifLatitude != "" && extraInfo.exifLongitude !="") {
+            Text(
+                text = "Location: (${extraInfo.exifLatitude},${extraInfo.exifLongitude})",
+                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+            )
+        }
+        if (extraInfo.exifLocation != "") {
+            Text(
+                text = "Location: ${extraInfo.exifLocation}",
+                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+            )
+        }
+        if (extraInfo.exifDevice != "") {
+            Text(
+                text = "Device: ${extraInfo.exifDevice}",
+                style = TextStyle(color = Color.Gray, fontSize = 16.sp),
+            )
+        }
         Text(
             text = stringResource(R.string.HideInformation),
             style = TextStyle(color = colorResource(R.color.microsoftBlue), fontSize = 16.sp),

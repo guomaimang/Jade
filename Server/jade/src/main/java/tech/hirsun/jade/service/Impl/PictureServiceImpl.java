@@ -97,7 +97,6 @@ public class PictureServiceImpl implements PictureService {
         }
 
 
-
         if (picture.getTitle().length() > 30){
             throw new BadRequestException("Title is too long", ErrorCode.UPLOAD_FILE_ERROR);
         }

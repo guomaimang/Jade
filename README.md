@@ -2,7 +2,7 @@
 
 JADE is a social application that means to revolutionalize the way travelers meet and document their journeys through the integration of social networking and travel related functions.
 
-![cover][]
+![cover](https://raw.githubusercontent.com/guomaimang/Jade/refs/heads/main/cover.png)
 
 Jade是基于Spring Boot和Android的现代化全栈应用程序，提供了后端服务和移动端前端应用。
 
